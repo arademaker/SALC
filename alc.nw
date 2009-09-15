@@ -1,0 +1,237 @@
+
+\title{A naive implementation of a Sequent Calculus for $\mathcal{ALC}$ in Maude}
+\author{Alexandre Rademaker}
+\maketitle
+
+\begin{abstract} 
+  This is an exercise about how could be an implementation of a
+  sequent calculos in Maude. Maude most used features here are pattern
+  matching for definition of functions, data and program as terms, the
+  easy way to implement ``possible proofs'' using rules, search and
+  rewrites.
+\end{abstract}
+
+
+\section{Introduction}
+
+The main motivation to implement the system described here is my need
+to exercise the deduction system $S_{\mathcal{ALC}}$.
+
+\section{The Implementation}
+
+The first step was to implement the language. If I was thinking about
+a generic theorem prover, I would have started from the common
+infrastructure for a sequent calculus reasoner. However, since my
+purpose was to archive my results quickly, I choose to start from the
+language definition.
+
+<<alc-language.maude>>=
+fmod ALC-SYNTAX is 
+ sorts AConcept Concept ARole Role .
+ subsort AConcept < Concept .
+ subsort ARole < Role .
+
+ ops ALL EXIST : Role Concept -> Concept .
+ ops CTRUE CFALSE : -> Concept .
+ op _&_ : Concept Concept -> Concept [gather (e E) prec 31] .
+ op _|_ : Concept Concept -> Concept [gather (e E) prec 32] .
+ op ~_  : Concept -> Concept [prec 30] .
+endfm
+
+@ 
+
+The system is a labeled sequent calculus. So that, we had actually to
+deal with two different languages. The first one, the traditional
+$\mathcal{ALC}$. The second one, the extended syntax to labels. Since
+Maude as developed for formal analysis and verification, based in a
+well studied formalism called Rewriting Logic, its support for modular
+specification is more formal and verbose than usual. To be able to use
+the available Maude implementations of lists and sets, I had to first
+create a [[View]] that maps one of my types to the generic type
+[[Elt]] used as parameter in the definition of all Maude default
+structure data types.
+
+<<alc-language.maude>>=
+fmod LABEL is 
+ inc ALC-SYNTAX .
+
+ sort Label .
+ subsort Role < Label .
+endfm
+
+view Label from TRIV to LABEL is 
+ sort Elt to Label .
+endv
+
+@
+
+Once I have the list of labels, I am finally ready to define the type
+and constructor of labeled concepts.
+
+<<alc-language.maude>>=
+fmod LALC-SYNTAX is 
+ inc LABEL .
+ inc LIST{Label} .
+
+ op skl : Label List{Label} -> Label .
+
+ sort LConcept .
+ op <_|_|_> : List{Label} Concept List{Label} -> LConcept [ctor] . 
+endfm
+
+@
+
+Given the above definitions, we can now test if the language is well
+defined. We create a test module with some atomic concepts and roles
+to be able to write a labelled concept.
+
+<<alc-test.maude>>=
+in alc-language.maude
+
+fmod TESTE is
+ inc LALC-SYNTAX .
+
+ ops A B C D E : -> AConcept .
+ ops R S T U V : -> ARole .
+endfm
+
+red < R S | ALL(R, A & ~ B) | skl(V, R S) T S > . 
+
+@ 
+
+\subsection{The Sequent Calculus}
+
+We are now ready to define the Sequent Calculus system. We introduce
+the datatypes: [[Sequent]] and [[Goal]]. In that way, a proof is just
+a multiset of goal objects. That is, a directed acyclic graph.
+
+<<alc-system.maude>>=
+view LConcept from TRIV to LALC-SYNTAX is 
+ sort Elt to LConcept .
+endv
+
+mod SEQUENT-CALCULUS is
+ inc LALC-SYNTAX .
+ inc SET{LConcept} .
+ inc SET{Nat} .
+ inc NAT . 
+ inc QID .
+
+ sort Sequent .
+ op _|-_ : Set{LConcept} Set{LConcept} -> Sequent [ctor prec 122 gather(e e)] .
+
+ sorts Goal State Proof .
+ subsort Goal State < Proof .
+
+ op goals : Set{Nat} -> State .
+ op next  : Nat -> State .
+
+ op [_from_by_is_] : Nat Nat Qid Sequent -> Goal [format (n d d d d d d d d d)] .
+ op __ : Proof Proof -> Proof [ctor comm assoc] .
+
+ vars ALFA GAMMA : Set{LConcept} .
+ vars X Y N : Nat .
+ var XS : Set{Nat} .
+ vars A B C D : Concept .
+ vars R S : Role .
+ var Q1 Q2 Q : Qid .
+ vars L L1 L2 : List{Label} .
+
+ rl [initial] : 
+  [ X from Y by Q is   ALFA, < L1 | A | L2 > |- < L1 | A | L2 >, GAMMA ] goals((X, XS)) => 
+  [ X from Y by Q is   ALFA, < L1 | A | L2 > |- < L1 | A | L2 >, GAMMA ] goals(XS) .
+
+ rl [and-r] : 
+  [ X from Y by R1 is     ALFA |- GAMMA, < L | A & B | nil > ] next(N) goals((X, XS)) => 
+  [ X from Y by R1 is     ALFA |- GAMMA, < L | A & B | nil > ] next(N + 2) goals((XS, N, N + 1))
+  [ N     from X by 'and-r is ALFA |- GAMMA, < L | A | nil > ] 
+  [ N + 1 from X by 'and-r is ALFA |- GAMMA, < L | B | nil > ] .
+
+ rl [and-l] : 
+  [ X from Y by R1 is     ALFA, < L | A & B | nil > |- GAMMA ] next(N) goals((X, XS)) => 
+  [ X from Y by R1 is     ALFA, < L | A & B | nil > |- GAMMA ] next(N + 1) goals((XS, N))
+  [ N from X by 'and-l is ALFA, < L | A | nil >, < L | B | nil > |- GAMMA ] .
+
+ crl [or-l] : 
+  [ X from Y by R1 is    ALFA, lc(L, A | B) |- GAMMA ] next(N) goals((X, XS)) =>
+  [ X from Y by R1 is    ALFA, lc(L, A | B) |- GAMMA ] next(N + 2) goals((XS, N, N + 1))
+  [ N from X by 'or-l is ALFA, lc(L, A)  |- GAMMA ] 
+  [ N + 1 from X by 'or-l is ALFA, lc(L, B)  |- GAMMA ] if is-exist(L) . 
+
+ crl [or-r] : 
+  [ X from Y by R1 is    ALFA |- GAMMA, lc(L, A | B) ] next(N) goals((X, XS)) => 
+  [ X from Y by R1 is    ALFA |- GAMMA, lc(L, A | B) ] next(N + 1) goals((XS, N))
+  [ N from X by 'or-r is ALFA |- GAMMA, lc(L, A), lc(L, B) ] if is-exist(L) .
+
+ rl [forall-r] : 
+  [ X from Y by R1 is        ALFA |- GAMMA, lc(L, ALL(R, A)) ] next(N) goals((X, XS)) => 
+  [ X from Y by R1 is        ALFA |- GAMMA, lc(L, ALL(R, A)) ] next(N + 1) goals((XS, N))
+  [ N from X by 'forall-r is ALFA |- GAMMA, lc(L (AL,R), A)  ] .
+
+ rl [forall-l] : 
+  [ X from Y by R1 is        ALFA, lc(L, ALL(R, A)) |- GAMMA ] next(N) goals((X, XS)) => 
+  [ X from Y by R1 is        ALFA, lc(L, ALL(R, A)) |- GAMMA ] next(N + 1) goals((XS, N))
+  [ N from X by 'forall-l is ALFA, lc(L (AL,R), A)  |- GAMMA ] .
+
+ rl [exist-r] : 
+  [ X from Y by R1 is       ALFA |- GAMMA, lc(L, EXIST(R, A)) ] next(N) goals((X, XS)) => 
+  [ X from Y by R1 is       ALFA |- GAMMA, lc(L, EXIST(R, A)) ] next(N + 1) goals((XS, N))
+  [ N from X by 'exist-r is ALFA |- GAMMA, lc(L (EX, R), A)   ] .
+
+ rl [exist-l] : 
+  [ X from Y by R1 is       ALFA, lc(L, EXIST(R, A)) |- GAMMA ] next(N) goals((X, XS)) => 
+  [ X from Y by R1 is       ALFA, lc(L, EXIST(R, A)) |- GAMMA ] next(N + 1) goals((XS, N))
+  [ N from X by 'exist-l is ALFA, lc(L (EX, R), A)   |- GAMMA ] .
+
+ rl [neg-l] : 
+  [ X from Y by R1 is     ALFA, lc(L, ~ A) |- GAMMA ] next(N) goals((X, XS)) => 
+  [ X from Y by R1 is     ALFA, lc(L, ~ A) |- GAMMA ] next(N + 1) goals((XS, N))
+  [ N from X by 'neg-l is ALFA |- GAMMA, lc(neg-list(L), A) ] .
+
+ rl [neg-r] : 
+  [ X from Y by R1 is     ALFA |- GAMMA, lc(L, ~ A) ] next(N) goals((X, XS)) => 
+  [ X from Y by R1 is     ALFA |- GAMMA, lc(L, ~ A) ] next(N + 1) goals((XS, N))
+  [ N from X by 'neg-r is ALFA, lc(neg-list(L), A) |- GAMMA ] .
+
+endm
+@
+
+\section{Testing}
+
+For testing, we create a theory that actually can be viewed as an ontology instantiation. 
+
+<<alc-system.maude>>=
+mod TESTE is
+ inc SEQUENT-CALCULUS .
+
+ ops A B C D E : -> AConcept .
+ ops R S T U V : -> ARole .
+
+ ops seq1 seq2 : -> Sequent .
+ eq seq1 = lc(nil, ALL(R, ~ (A & B))) |- lc(nil, ALL(R, ~ (A | B))) .
+ eq seq2 = lc(nil, ALL(R, A | B)), lc(nil, ALL(S, A | B)) |- lc(nil, EXIST(R, A & B)), lc(nil, EXIST(S, A & B)) .
+
+ ops init1 init2 : -> Goal .
+ eq init1 = [ 0 from 0 by 'init is seq1 ] next(1) goals(0) .
+ eq init2 = [ 0 from 0 by 'init is seq2 ] next(1) goals(0) .
+endm
+
+--- set show command off .
+--- rew init .
+
+search init1 =>! P:Proof .
+
+eof
+
+mod TESTE is
+ inc SEQUENT-CALCULUS .
+
+ subsorts AConcept ARole < Qid .
+endm
+@
+
+
+\section{Conclusion}
+
+Todo.
+
