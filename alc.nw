@@ -126,12 +126,12 @@ endfm
 
 Given the above definitions, we can now test if the language is well
 defined. We create a test module with some atomic concepts and roles
-to be able to write a labelled concept.
+constants to be able to write a labelled concept.
 
-<<alc-test.maude>>=
+<<test-language.maude>>=
 in alc-language.maude
 
-fmod TESTE is
+fmod TEST is
  inc LALC-AUX .
 
  ops A B C D E : -> AConcept .
@@ -162,7 +162,7 @@ a multiset of goal objects. That is, a directed acyclic graph.
 
 <<alc-system.maude>>=
 mod SEQUENT-CALCULUS is
- inc LALC-SYNTAX .
+ inc LALC-AUX .
  inc SET{LConcept} .
  inc SET{Nat} .
  inc NAT . 
@@ -175,8 +175,9 @@ mod SEQUENT-CALCULUS is
  subsort Goal State < Proof .
 
  op next  : Nat -> State .
+ op goals : Set{Nat} -> State .
 
- op [_from_by_is_:_] : Nat Nat Qid Nat Sequent -> Goal [format (n d d d d d d d d d d)] .
+ op [_from_by_is_] : Nat Nat Qid Sequent -> Goal [format (n d d d d d d d d d)] .
  op __ : Proof Proof -> Proof [ctor comm assoc] .
 
  vars ALFA GAMMA : Set{LConcept} .
@@ -184,101 +185,180 @@ mod SEQUENT-CALCULUS is
  var XS : Set{Nat} .
  vars A B C D : Concept .
  vars R S : Role .
- var Q1 Q2 Q : Qid .
- vars L L1 L2 : List{Label} .
+ var AT : AConcept .
+ var Q : Qid .
+ vars L L1 L2 L3 L4 : List{Label} .
 
  rl [initial] : 
-  [ X from Y by Q is 0 :  ALFA, < L1 | A | L2 > |- < L1 | A | L2 >, GAMMA ] => 
-  [ X from Y by Q is 1 :  ALFA, < L1 | A | L2 > |- < L1 | A | L2 >, GAMMA ] .
+  [ X from Y by Q is ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA ] goals((X, XS)) => 
+  [ X from Y by Q is ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA ] goals((XS)) .
 
  rl [and-r] : 
-  [ X from Y by Q is 0 :   ALFA |- GAMMA, < L | A & B | nil > ] next(N) => 
-  [ X from Y by Q is 1 :   ALFA |- GAMMA, < L | A & B | nil > ] next(N + 2) 
-  [ N     from X by 'and-r is 0 :   ALFA |- GAMMA, < L | A | nil > ] 
-  [ N + 1 from X by 'and-r is 0 :   ALFA |- GAMMA, < L | B | nil > ] .
+  [ X from Y by Q is ALFA |- GAMMA, < L | A & B | nil > ] next(N) goals((X, XS)) => 
+  [ X from Y by Q is ALFA |- GAMMA, < L | A & B | nil > ] next(N + 2) goals((XS, N, N + 1)) 
+  [ N     from X by 'and-r is ALFA |- GAMMA, < L | A | nil > ] 
+  [ N + 1 from X by 'and-r is ALFA |- GAMMA, < L | B | nil > ] .
 
  rl [and-l] : 
-  [ X from Y by Q is 0 :     ALFA, < L | A & B | nil > |- GAMMA ] next(N) => 
-  [ X from Y by Q is 1 :     ALFA, < L | A & B | nil > |- GAMMA ] next(N + 1) 
-  [ N from X by 'and-l is 0 : ALFA, < L | A | nil >, < L | B | nil > |- GAMMA ] .
+  [ X from Y by Q is      ALFA, < L | A & B | nil > |- GAMMA ] next(N) goals((X, XS)) => 
+  [ X from Y by Q is      ALFA, < L | A & B | nil > |- GAMMA ] next(N + 1) goals((XS, N)) 
+  [ N from X by 'and-l is ALFA, < L | A | nil >, < L | B | nil > |- GAMMA ] .
 
  rl [or-l] : 
-  [ X from Y by Q is 0 :  ALFA, < nil | (A | B) | L > |- GAMMA ] next(N) =>
-  [ X from Y by Q is 1 :  ALFA, < nil | (A | B) | L > |- GAMMA ] next(N + 2) 
-  [ N     from X by 'or-l is 0 :   ALFA, < nil | A | L > |- GAMMA ] 
-  [ N + 1 from X by 'or-l is 0 :   ALFA, < nil | B | L > |- GAMMA ] .
+  [ X from Y by Q is  ALFA, < nil | (A | B) | L > |- GAMMA ] next(N) goals((X, XS)) =>
+  [ X from Y by Q is  ALFA, < nil | (A | B) | L > |- GAMMA ] next(N + 2) goals((XS, N, N + 1))
+  [ N     from X by 'or-l is  ALFA, < nil | A | L > |- GAMMA ] 
+  [ N + 1 from X by 'or-l is  ALFA, < nil | B | L > |- GAMMA ] .
 
  rl [or-r] : 
-  [ X from Y by Q is 0 :    ALFA |- GAMMA, < nil | (A | B) | L > ] next(N) => 
-  [ X from Y by Q is 1 :    ALFA |- GAMMA, < nil | (A | B) | L > ] next(N + 1) 
-  [ N from X by 'or-r is 0 : ALFA |- GAMMA, < nil | A | L >, < nil | B | L > ] .
+  [ X from Y by Q is     ALFA |- GAMMA, < nil | (A | B) | L > ] next(N) goals((X, XS)) => 
+  [ X from Y by Q is     ALFA |- GAMMA, < nil | (A | B) | L > ] next(N + 1) goals((XS, N))
+  [ N from X by 'or-r is  ALFA |- GAMMA, < nil | A | L >, < nil | B | L > ] .
 
  rl [forall-r] : 
-  [ X from Y by Q is 0 :   ALFA |- GAMMA, < L1 | ALL(R, A) | L2 > ] next(N) => 
-  [ X from Y by Q is 1 :   ALFA |- GAMMA, < L1 | ALL(R, A) | L2 > ] next(N + 1) 
-  [ N from X by 'forall-r is 0 :  ALFA |- GAMMA, < L1 R | A | L2 > ] .
+  [ X from Y by Q is    ALFA |- GAMMA, < L1 | ALL(R, A) | L2 > ] next(N) goals((X, XS)) => 
+  [ X from Y by Q is    ALFA |- GAMMA, < L1 | ALL(R, A) | L2 > ] next(N + 1) goals((XS, N))
+  [ N from X by 'forall-r is   ALFA |- GAMMA, < L1 R | A | L2 > ] .
 
  rl [forall-l] : 
-  [ X from Y by Q is 0 :        ALFA, < L1 | ALL(R, A) | L2 > |- GAMMA ] next(N) => 
-  [ X from Y by Q is 1 :        ALFA, < L1 | ALL(R, A) | L2 > |- GAMMA ] next(N + 1) 
-  [ N from X by 'forall-l is 0 : ALFA, < L1 R | A | L2 > |- GAMMA ] .
+  [ X from Y by Q is         ALFA, < L1 | ALL(R, A) | L2 > |- GAMMA ] next(N) goals((X, XS)) => 
+  [ X from Y by Q is         ALFA, < L1 | ALL(R, A) | L2 > |- GAMMA ] next(N + 1) goals((XS, N)) 
+  [ N from X by 'forall-l is  ALFA, < L1 R | A | L2 > |- GAMMA ] .
 
  rl [exist-r] : 
-  [ X from Y by Q is 0 :       ALFA |- GAMMA, < L1 | EXIST(R, A) | L2 > ] next(N) => 
-  [ X from Y by Q is 1 :       ALFA |- GAMMA, < L1 | EXIST(R, A) | L2 > ] next(N + 1) 
-  [ N from X by 'exist-r is 0 : ALFA |- GAMMA, < L1 | A | skl(R, L1) L2 > ] .
+  [ X from Y by Q is       ALFA |- GAMMA, < L1 | EXIST(R, A) | L2 > ] next(N) goals((X, XS)) => 
+  [ X from Y by Q is       ALFA |- GAMMA, < L1 | EXIST(R, A) | L2 > ] next(N + 1) goals((XS, N)) 
+  [ N from X by 'exist-r is ALFA |- GAMMA, < L1 | A | s(R, L1) L2 > ] .
 
  rl [exist-l] : 
-  [ X from Y by Q is 0 :       ALFA, < L1 | EXIST(R, A) | L2 > |- GAMMA ] next(N) => 
-  [ X from Y by Q is 1 :       ALFA, < L1 | EXIST(R, A) | L2 > |- GAMMA ] next(N + 1) 
-  [ N from X by 'exist-l is 0 : ALFA, < L1 | A | skl(R, L1) L2 > |- GAMMA ] .
+  [ X from Y by Q is      ALFA, < L1 | EXIST(R, A) | L2 > |- GAMMA ] next(N) goals((X, XS)) => 
+  [ X from Y by Q is      ALFA, < L1 | EXIST(R, A) | L2 > |- GAMMA ] next(N + 1) goals((XS, N))
+  [ N from X by 'exist-l is   ALFA, < L1 | A | s(R, L1) L2 > |- GAMMA ] .
 
- rl [neg-l] : 
-  [ X from Y by Q is 0 :     ALFA, < L1 | ~ A | L2 >  |- GAMMA ] next(N)  => 
-  [ X from Y by Q is 1 :     ALFA, < L1 | ~ A | L2 >  |- GAMMA ] next(N + 1) 
-  [ N from X by 'neg-l is 0 : ALFA |- GAMMA, < L1/L2 | A | L2/L1 > ] .
+ crl [neg-l] : 
+  [ X from Y by Q is    ALFA, < L1 | ~ A | L2 >  |- GAMMA ] next(N)  goals((X, XS)) => 
+  [ X from Y by Q is    ALFA, < L1 | ~ A | L2 >  |- GAMMA ] next(N + 1) goals((XS, N))
+  [ N from X by 'neg-l is ALFA |- GAMMA, < L3 | A | L4 > ] 
+ if [L3, L4] := neg(L1, L2) .
 
- rl [neg-r] : 
-  [ X from Y by Q is 0 :     ALFA |- GAMMA, < L1 | ~ A | L2 > ] next(N) => 
-  [ X from Y by Q is 1 :     ALFA |- GAMMA, < L1 | ~ A | L2 > ] next(N + 1) 
-  [ N from X by 'neg-r is 0 : ALFA, < L1/L2 | A | L2/L1 > |- GAMMA ] .
+ crl [neg-r] : 
+  [ X from Y by Q is    ALFA |- GAMMA, < L1 | ~ A | L2 > ] next(N) goals((X, XS)) => 
+  [ X from Y by Q is    ALFA |- GAMMA, < L1 | ~ A | L2 > ] next(N + 1) goals((XS, N))
+  [ N from X by 'neg-r is ALFA, < L3 | A | L4 > |- GAMMA ] 
+ if [L3, L4] := neg(L1, L2) .
+
+<<Promotion Exist>>
+<<Promotion All>>
 
 endm
 
 @
 
+The promotion rules require a bit more complex implementation since
+they operate not only in a single concept but on the sequent as a
+whole.
+
+<<Promotion Exist>>=
+ vars LA LB : LConcept .
+ var GAMMA' ALFA' : Set{LConcept} .
+ 
+ op all-label-exist        : Set{LConcept} Label -> Bool .
+ op remove-label-exist     : Set{LConcept} Label -> Set{LConcept} .
+ op remove-label-exist-aux : Set{LConcept} Label Set{LConcept} -> Set{LConcept} .
+ 
+ ceq all-label-exist((LA, GAMMA), R) = all-label-exist(GAMMA, R)
+  if < L1 | A | L2 R > := LA .
+  
+ eq all-label-exist(empty, R) = true . 
+ eq all-label-exist(GAMMA, R) = false [owise] .
+ 
+ eq remove-label-exist(GAMMA, R) = 
+    remove-label-exist-aux(GAMMA, R, empty) .
+    
+ eq remove-label-exist-aux((< L1 | A | L2 R >, GAMMA), R, GAMMA') = 
+    remove-label-exist-aux(GAMMA, R, (GAMMA', < L1 | A | L2 >)) .
+
+ eq remove-label-exist-aux(empty, R, GAMMA) = GAMMA .
+    
+ crl [prom-exist] : 
+  [ X from Y by Q is    < L1 | A | L2 R > |- GAMMA ] next(N)     goals((X, XS)) => 
+  [ X from Y by Q is    < L1 | A | L2 R > |- GAMMA ] next(N + 1) goals((XS, N))
+  [ N from X by 'prom-exist is  < L1 | A | L2 > |- GAMMA' ] 
+ if all-label-exist(GAMMA, R) = true /\ GAMMA' := remove-label-exist(GAMMA, R) .
+
+@ 
+
+The [[prom-all]] and [[prom-all-esp]] rules are defined in a similar way:
+
+<<Promotion All>>=
+ op all-label-all        : Set{LConcept} Label -> Bool .
+ op remove-label-all     : Set{LConcept} Label -> Set{LConcept} .
+ op remove-label-all-aux : Set{LConcept} Label Set{LConcept} -> Set{LConcept} .
+ 
+ ceq all-label-all((LA, ALFA), R) = all-label-exist(ALFA, R)
+  if < R L L1 | A | L2 s(S, R L) > := LA .
+  
+ ceq all-label-all((LA, ALFA), R) = all-label-exist(ALFA, R)
+  if < R L1 | A | nil > := LA .
+
+ eq all-label-all(empty, R) = true . 
+ eq all-label-all(ALFA, R) = false [owise] .
+ 
+ eq remove-label-all(ALFA, R) = 
+    remove-label-all-aux(ALFA, R, empty) .
+    
+ eq remove-label-all-aux((< R L1 | A | nil >, ALFA), R, ALFA') = 
+    remove-label-all-aux(ALFA, R, (ALFA', < L1 | A | nil >)) .
+
+ eq remove-label-all-aux((< R L L1 | A | L2 s(S, R L) >, ALFA), R, ALFA') = 
+    remove-label-all-aux(ALFA, R, (ALFA', < L L1 | A | L2 s(S, L) >)) .
+    
+ eq remove-label-all-aux(empty, R, ALFA) = ALFA .
+    
+ crl [prom-all-esp] : 
+  [ X from Y by Q is    ALFA |- < R L1 | A | nil > ] next(N)     goals((X, XS)) => 
+  [ X from Y by Q is    ALFA |- < R L1 | A | nil > ] next(N + 1) goals((XS, N))
+  [ N from X by 'prom-all-esp is  ALFA' |- < L1 | A | nil >  ] 
+ if all-label-all(ALFA, R) = true /\ ALFA' := remove-label-all(ALFA, R) .
+
+ crl [prom-all] : 
+  [ X from Y by Q is    ALFA |- < R L L1 | A | L2 s(S, R L) > ] next(N)     goals((X, XS)) => 
+  [ X from Y by Q is    ALFA |- < R L L1 | A | L2 s(S, R L) > ] next(N + 1) goals((XS, N))
+  [ N from X by 'prom-all is  ALFA' |- < L1 | A | L2 s(S, L) >  ] 
+ if all-label-all(ALFA, R) = true /\ ALFA' := remove-label-all(ALFA, R) .
+ 
+@ 
+
 \section{Testing}
 
 For testing, we create a theory that actually can be viewed as an ontology instantiation. 
 
-<<alc-system-test.maude>>=
-mod TESTE is
+<<test-system.maude>>=
+in alc-system.maude 
+
+mod TEST is
  inc SEQUENT-CALCULUS .
 
  ops A B C D E : -> AConcept .
  ops R S T U V : -> ARole .
 
- ops seq1 seq2 : -> Sequent .
- eq seq1 = lc(nil, ALL(R, ~ (A & B))) |- lc(nil, ALL(R, ~ (A | B))) .
- eq seq2 = lc(nil, ALL(R, A | B)), lc(nil, ALL(S, A | B)) |- lc(nil, EXIST(R, A & B)), lc(nil, EXIST(S, A & B)) .
+ ops seq1 seq2 seq3 : -> Sequent .
+ eq seq1 = < nil | EXIST(S, ALL(R, A)) | nil > |- < nil | EXIST(S, ALL(R, A)) | nil > .
+ eq seq2 = < nil | ALL(S, EXIST(R, A)) | nil > |- < nil | ALL(S, EXIST(R, A)) | nil > .
 
- ops init1 init2 : -> Goal .
+ eq seq3 = < nil | EXIST(R, CTRUE) & ALL(R, ~ EXIST(R, ~ A)) | nil > |- < nil | EXIST(R, ALL(R, A)) | nil > .
+
+ ops init1 init2 init3 : -> Goal .
  eq init1 = [ 0 from 0 by 'init is seq1 ] next(1) goals(0) .
  eq init2 = [ 0 from 0 by 'init is seq2 ] next(1) goals(0) .
+ 
+ eq init3 = [ 0 from 0 by 'init is seq3 ] next(1) goals(0) .
 endm
 
 --- set show command off .
 --- rew init .
+--- search init2 =>! P:Proof goals(empty) .
 
-search init1 =>! P:Proof .
-
-eof
-
-mod TESTE is
- inc SEQUENT-CALCULUS .
-
- subsorts AConcept ARole < Qid .
-endm
 @
 
 
