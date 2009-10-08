@@ -1,0 +1,57 @@
+in alc-language.maude 
+
+fmod LATEX is 
+ inc LALC-SYNTAX .
+ inc STRING .
+ 
+ op latex : Concept -> String .
+ op latex : Role -> String .
+ 
+ vars A B C : Concept .
+ var R : Role .
+ vars L1 L2 : List{Label} .
+
+ eq latex(CTRUE) = "\top" .
+ eq latex(CFALSE) = "\bot" .
+ 
+ eq latex( ~ A )   = "\neg (" + latex(A) + ")" .
+ eq latex( A | B ) = "(" + latex(A) + " /dlor "  + latex(B) + ")" .
+ eq latex( A & B ) = "(" + latex(A) + " /dland " + latex(B) + ")" .
+ eq latex( ALL(R,A) ) =   "\forall " + latex(R) + ". (" + latex(A) + ")" .
+ eq latex( EXIST(R,A) ) = "/exists " + latex(R) + ". (" + latex(A) + ")" .
+
+ op latex : List{Label} -> String .
+ 
+ eq latex(s(R, L1) L2) = latex(R) + "(" + latex(L1) + ") " + latex(L2) .
+ eq latex(R L1) = latex(R) + " " + latex(L1) .
+ eq latex(nil)  = "" .
+ 
+ op latex : LConcept -> String .
+
+ eq latex(< L1 | A | L2 >) = "/lc{" + latex(L1) + "}{" + latex(A) + "}{" + latex(L2) + "}" .
+
+endfm
+
+fmod LATEX-TEST is
+ inc LATEX .
+ inc QID .
+ 
+ 
+ op conc : Qid -> AConcept .
+ op role : Qid -> ARole .
+
+ var Q : Qid .
+ 
+ eq latex(conc(Q)) = string(Q) .
+ eq latex(role(Q)) = string(Q) .
+ 
+ ops c1 c2 : -> Concept .
+ 
+ eq c1 =   ALL(role('R), conc('A) & CTRUE) .
+ eq c2 = EXIST(role('R), conc('A) | CTRUE) .
+ 
+ op c3 : -> LConcept .
+ eq c3 = < role('R) role('S) | ~ conc('A) | s(role('X), role('S)) role('R)  > .
+
+endfm 
+ 

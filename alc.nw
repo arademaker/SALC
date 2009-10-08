@@ -75,7 +75,8 @@ endv
 @
 
 Once I have the list of labels, I am finally ready to define the type
-and constructor of labeled concepts.
+and constructor of labeled concepts. We also define the sort
+[[FzConcept]] that will be used in the following sections.
 
 <<alc-language.maude>>=
 fmod LALC-SYNTAX is 
@@ -87,10 +88,12 @@ fmod LALC-SYNTAX is
  vars R : Role .
  eq s(R, nil) = R .
 
- sorts Exp LConcept .
- subsort LConcept < Exp .
+ sorts Expression LConcept FzConcept .
+ subsorts LConcept FzConcept < Expression .
 
  op <_|_|_> : List{Label} Concept List{Label} -> LConcept [ctor] . 
+ 
+ op [_,_] : Nat LConcept -> FzConcept .
 endfm
 
 @
@@ -156,14 +159,23 @@ red < R S | ALL(R, A & ~ B) | s(V, R S) T S > .
 \subsection{The Sequent Calculus}\label{sec:alc}
 
 We again defined a [[view]] over the [[TRIV]] module so that we can
-easly define sets of labeled concepts.
+easly define sets of labeled concepts, frozen concepts and
+expressions.
 
 <<alc-system.maude>>=
 in alc-language.maude
 
-view Exp from TRIV to LALC-SYNTAX is 
- sort Elt to Exp .
+view Expression from TRIV to LALC-SYNTAX is 
+ sort Elt to Expression .
 endv
+
+--- view FzConcept from TRIV to LALC-SYNTAX is 
+---  sort Elt to FzConcept .
+--- endv
+
+--- view LConcept from TRIV to LALC-SYNTAX is 
+---  sort Elt to LConcept .
+--- endv
 
 @  
 
@@ -172,15 +184,15 @@ the datatypes: [[Sequent]] and [[Goal]]. In that way, a proof is just
 a multiset of goal objects. That is, a directed acyclic graph.
 
 <<alc-system.maude>>=
-mod LALC-SYSTEM is
+fmod SEQUENT-CALCULUS is
  inc LALC-AUX .
- inc SET{Exp} .
+ inc SET{Expression} .
  inc SET{Nat} .
  inc NAT . 
  inc QID .
 
  sort Sequent .
- op _|-_ : Set{Exp} Set{Exp} -> Sequent [ctor prec 122 gather(e e)] .
+ op _|-_ : Set{Expression} Set{Expression} -> Sequent [ctor prec 122 gather(e e)] .
 
  sorts Goal State Proof .
  subsort Goal State < Proof .
@@ -190,8 +202,17 @@ mod LALC-SYSTEM is
 
  op [_from_by_is_] : Nat Nat Qid Sequent -> Goal [format (n d d d d d d d d d)] .
  op __ : Proof Proof -> Proof [ctor comm assoc] .
+endfm 
+
+@  
+
+Our first concrete implementation of a sequent calculus for ALC:
+
+<<alc-system.maude>>=
+mod LALC-SYSTEM is 
+ inc SEQUENT-CALCULUS .
  
- vars ALFA GAMMA : Set{LConcept} .
+ vars ALFA GAMMA : Set{Expression} .
  vars X Y N : Nat .
  var XS : Set{Nat} .
  vars A B C D : Concept .
@@ -311,11 +332,11 @@ operate not only in a single concept but on the sequent as a whole.
 
 <<Promotion Exist>>=
  vars LA LB : LConcept .
- var GAMMA' ALFA' : Set{LConcept} .
+ var GAMMA' ALFA' : Set{Expression} .
  
- op all-label-exist        : Set{LConcept} Label -> Bool .
- op remove-label-exist     : Set{LConcept} Label -> Set{LConcept} .
- op remove-label-exist-aux : Set{LConcept} Label Set{LConcept} -> Set{LConcept} .
+ op all-label-exist        : Set{Expression} Label -> Bool .
+ op remove-label-exist     : Set{Expression} Label -> Set{Expression} .
+ op remove-label-exist-aux : Set{Expression} Label Set{Expression} -> Set{Expression} .
  
  ceq all-label-exist((LA, GAMMA), R) = all-label-exist(GAMMA, R)
   if < L1 | A | L2 R > := LA .
@@ -342,9 +363,9 @@ operate not only in a single concept but on the sequent as a whole.
 The [[prom-all]] and [[prom-all-esp]] rules are defined in a similar way:
 
 <<Promotion All>>=
- op all-label-all        : Set{LConcept} Label -> Bool .
- op remove-label-all     : Set{LConcept} Label -> Set{LConcept} .
- op remove-label-all-aux : Set{LConcept} Label Set{LConcept} -> Set{LConcept} .
+ op all-label-all        : Set{Expression} Label -> Bool .
+ op remove-label-all     : Set{Expression} Label -> Set{Expression} .
+ op remove-label-all-aux : Set{Expression} Label Set{Expression} -> Set{Expression} .
  
  ceq all-label-all((LA, ALFA), R) = all-label-exist(ALFA, R)
   if < R L L1 | A | L2 s(S, R L) > := LA .
@@ -409,6 +430,7 @@ Where the test cases are the following:
  eq seq(5) = < R | A & B | S > |- < R | (A | B) | S > .
  eq seq(6) = < S | A & B | R >, < R | A & B | S > |- < R | (A | B) | S >, < S | (A | B) | R > . 
  eq seq(7) = < R | A | B | S > |- < R | (A & B) | S > .
+ eq seq(8) = < nil | A & ALL(R, C) | nil > |- < nil | B & ALL(S,D) | nil > .
  
  op start : Sequent -> Goal . 
  eq start(X:Sequent) = [ 0 from 0 by 'init is X:Sequent ] next(1) goals(0) .
@@ -524,7 +546,7 @@ Let us introduce the weakness rules in the system:
 mod LALC-SYSTEM-FULL is 
  inc LALC-SYSTEM .
 
- vars ALFA GAMMA : Set{LConcept} .
+ vars ALFA GAMMA : Set{Expression} .
  vars X Y N : Nat .
  var XS : Set{Nat} .
  var F : LConcept .
@@ -567,21 +589,64 @@ choosen.
 Let us introduce a deterministic version of the system. The system is
 presented in \cite{sbia}.
 
-<<alc-bracked-system>>=
-in alc-language.maude
+<<alc-system.maude>>=
+mod LALC-SYSTEM-FROZEN is
+ inc SEQUENT-CALCULUS .
+ inc SET{FzConcept} .
 
-fmod ALC-LANGUAGE-FROZEN is
- inc LALC-SYNTAX .
- inc NAT .
+ vars ALFA GAMMA : Set{Expression} .
+ vars X Y N : Nat .
+ var XS : Set{Nat} .
+ vars A B C D : Concept .
+ vars R S : Role .
+ var AT : AConcept .
+ var Q : Qid .
+ vars L L1 L2 L3 L4 : List{Label} .
 
- sort FzConcept .
- subsort FzConcept < Exp .
-
- op frozen : Nat LConcept -> FzConcept .
- 
-endfm
+ <<SALC Initial>>
+ <<SALC AND>>
+ <<SALC OR>>
+ <<SALC NOT>>
+ <<SALC Labels>>
+ <<FzPromotion Exist>>
+endm
 
 @
+
+Let us now introduce the frozen versions of the promotional rules. 
+
+<<FzPromotion Exist>>=
+ vars LA LB : LConcept .
+ 
+ var FzALFA : Set{FzConcept} .
+ vars GAMMA' ALFA' ALFA1 ALFA2 : Set{Expression} .
+ 
+ op all-label-exist        : Set{Expression} Label -> Bool .
+ op remove-label-exist     : Set{Expression} Label -> Set{Expression} .
+ op remove-label-exist-aux : Set{Expression} Label Set{Expression} -> Set{Expression} .
+ 
+ ceq all-label-exist((LA, GAMMA), R) = all-label-exist(GAMMA, R)
+  if < L1 | A | L2 R > := LA .
+  
+ eq all-label-exist(empty, R) = true . 
+ eq all-label-exist(GAMMA, R) = false [owise] .
+ 
+ eq remove-label-exist(GAMMA, R) = 
+    remove-label-exist-aux(GAMMA, R, empty) .
+    
+ eq remove-label-exist-aux((< L1 | A | L2 R >, GAMMA), R, GAMMA') = 
+    remove-label-exist-aux(GAMMA, R, (GAMMA', < L1 | A | L2 >)) .
+
+ eq remove-label-exist-aux(empty, R, GAMMA) = GAMMA .
+    
+ crl [prom-exist] : 
+  [ X from Y by Q is    FzALFA ALFA1 ALFA2 < L1 | A | L2 R > |- GAMMA ] next(N)     goals((X, XS)) => 
+  [ X from Y by Q is    FzALFA ALFA1 ALFA2 < L1 | A | L2 R > |- GAMMA ] next(N + 1) goals((XS, N))
+  [ N from X by 'prom-exist is  < L1 | A | L2 > |- GAMMA' ] 
+ if all-label-exist(GAMMA, R) = true /\ GAMMA' := remove-label-exist(GAMMA, R) .
+
+@  
+
 
 
 

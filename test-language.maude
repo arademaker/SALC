@@ -1,0 +1,11 @@
+in alc-language.maude
+
+fmod TEST is
+ inc LALC-AUX .
+
+ ops A B C D E : -> AConcept .
+ ops R S T U V : -> ARole .
+endfm
+
+red < R S | ALL(R, A & ~ B) | s(V, R S) T S > . 
+
