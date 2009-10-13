@@ -1,3 +1,4 @@
+
 in alc-system.maude 
 
 mod TEST-SYSTEM is
@@ -15,29 +16,7 @@ mod TEST-SYSTEM is
   eq seq(6) = < S | A & B | R >, < R | A & B | S > |- < R | (A | B) | S >, < S | (A | B) | R > . 
   eq seq(7) = < R | A | B | S > |- < R | (A & B) | S > .
   eq seq(8) = < nil | A & ALL(R, C) | nil > |- < nil | B & ALL(S,D) | nil > .
-  
-  op start : Sequent -> Goal . 
-  eq start(X:Sequent) = [ 0 from 0 by 'init is X:Sequent ] next(1) goals(0) .
-  
-endm
 
-
-mod TEST-SYSTEM-FULL is
- inc LALC-SYSTEM-FULL .
-
-  ops A B C D E : -> AConcept .
-  ops R S T U V : -> ARole .
-
-  ops seq : Nat -> Sequent .
-  eq seq(1) = < nil | EXIST(S, ALL(R, A)) | nil > |- < nil | EXIST(S, ALL(R, A)) | nil > .
-  eq seq(2) = < nil | ALL(S, EXIST(R, A)) | nil > |- < nil | ALL(S, EXIST(R, A)) | nil > .
-  eq seq(3) = < nil | EXIST(R, CTRUE) & ALL(R, ~ EXIST(R, ~ A)) | nil > |- < nil | EXIST(R, ALL(R, A)) | nil > .
-  eq seq(4) = < nil | A & B | nil > |- < nil | (A | B) | nil > .
-  eq seq(5) = < R | A & B | S > |- < R | (A | B) | S > .
-  eq seq(6) = < S | A & B | R >, < R | A & B | S > |- < R | (A | B) | S >, < S | (A | B) | R > . 
-  eq seq(7) = < R | A | B | S > |- < R | (A & B) | S > .
-  eq seq(8) = < nil | A & ALL(R, C) | nil > |- < nil | B & ALL(S,D) | nil > .
-  
   op start : Sequent -> Goal . 
   eq start(X:Sequent) = [ 0 from 0 by 'init is X:Sequent ] next(1) goals(0) .
   

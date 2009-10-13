@@ -1,0 +1,26 @@
+
+in alc-system-frozen.maude 
+
+mod TEST-SYSTEM is
+ inc LALC-SYSTEM .
+
+  ops A B C D E : -> AConcept .
+  ops R S T U V : -> ARole .
+
+  ops seq : Nat -> Sequent .
+  eq  seq(1) = empty : < nil | EXIST(S, ALL(R, A)) | nil > |- < nil | EXIST(S, ALL(R, A)) | nil > : empty .
+  eq  seq(2) = empty : < nil | ALL(S, EXIST(R, A)) | nil > |- < nil | ALL(S, EXIST(R, A)) | nil > : empty .
+  eq  seq(3) = empty : < nil | EXIST(R, CTRUE) & ALL(R, ~ EXIST(R, ~ A)) | nil > |- < nil | EXIST(R, ALL(R, A)) | nil > : empty .
+  eq  seq(4) = empty : < nil | A & B | nil > |- < nil | (A | B) | nil > : empty .
+  eq  seq(5) = empty : < R | A & B | S > |- < R | (A | B) | S > : empty .
+  eq  seq(6) = empty : < S | A & B | R >, < R | A & B | S > |- < R | (A | B) | S >, < S | (A | B) | R > : empty .
+  eq  seq(7) = empty : < R | A | B | S > |- < R | (A & B) | S > : empty .
+  eq  seq(8) = empty : < nil | A & ALL(R, C) | nil > |- < nil | B & ALL(S,D) | nil > : empty .
+  eq  seq(9) = empty : < nil | A | R >, < nil | B | R > |- < nil | C | R >, < nil | D | S > : empty .
+  eq seq(10) = empty : < R | A | nil >, < R | B | nil > |- < R | C | nil >, < S | D | nil > : empty .
+
+  op start : Nat -> Goal . 
+  eq start(N:Nat) = [ 0 from 0 by 'init is seq(N:Nat) ] next(1) goals(0) .
+  
+endm
+
