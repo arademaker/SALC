@@ -102,6 +102,14 @@ mod LALC-SYSTEM is
   vars LA LB : LConcept .
   vars GAMMA1 GAMMA2 GAMMA' ALFA' ALFA1 ALFA2 : Set{Expression} .
   vars FS FS1 FS2 : Set{Expression} .
+
+
+  op freeze : Set{Expression} Nat Set{Expression} -> Set{Expression} .
+
+  eq freeze((< L1 | A | L2 >, FS1), N:Nat, FS) = 
+     freeze(FS1, N:Nat, insert([ N:Nat , < L1 | A | L2 > ], FS)) .
+  eq freeze(empty, N:Nat, FS) = FS .
+     
   
   sort FormulasTuple .
   op [_,_] : Set{Expression} Set{Expression} -> FormulasTuple [ctor] .
@@ -123,14 +131,10 @@ mod LALC-SYSTEM is
 
   eq remove-label-exist(empty, R, FS) = FS .
 
-  op freeze : Set{Expression} -> Set{Expression} .
-  eq freeze((< L1 | A | L2 >, FS)) = [ 0 , < L1 | A | L2 > ], freeze(FS) .
-  eq freeze(empty) = empty .
-     
   crl [prom-exist] : 
    [ X from Y by Q is  FALFA : ALFA, < L1 | A | L2 R >  |- GAMMA : FGAMMA ] next(N) goals((X, XS)) => 
    [ X from Y by Q is  FALFA : ALFA, < L1 | A | L2 R >  |- GAMMA : FGAMMA ] next(N + 1) goals((XS, N))
-   [ N from X by 'prom-exist is  FALFA, freeze(ALFA) : < L1 | A | L2 > |- GAMMA' : FGAMMA, freeze(GAMMA) ] 
+   [ N from X by 'prom-exist is  freeze(ALFA, 0, FALFA) : < L1 | A | L2 > |- GAMMA' : freeze(GAMMA, 0, FGAMMA) ] 
   if [GAMMA1, GAMMA2] := split-formulas-exist(GAMMA, R, [empty, empty]) /\ 
                GAMMA' := remove-label-exist(GAMMA1, R, empty) .
 
@@ -163,16 +167,40 @@ mod LALC-SYSTEM is
   crl [prom-all-esp] : 
    [ X from Y by Q is  FALFA : ALFA |- < R L1 | A | nil >, GAMMA : FGAMMA ] next(N)  goals((X, XS)) => 
    [ X from Y by Q is  FALFA : ALFA |- < R L1 | A | nil >, GAMMA : FGAMMA ] next(N + 1) goals((XS, N))
-   [ N from X by 'prom-all-esp is  FALFA, freeze(ALFA) : ALFA' |- < L1 | A | nil > : FGAMMA, freeze(GAMMA)  ] 
+   [ N from X by 'prom-all-esp is  freeze(ALFA, 0, FALFA) : ALFA' |- < L1 | A | nil > : freeze(GAMMA, 0, FGAMMA)  ] 
   if [ALFA1, ALFA2] := split-formulas-all(ALFA, R, [empty, empty]) /\
               ALFA' := remove-label-all(ALFA1, R, empty) .
 
   crl [prom-all] : 
    [ X from Y by Q is  FALFA : ALFA |- < R L L1 | A | L2 s(S, R L) >, GAMMA : FGAMMA ] next(N)  goals((X, XS)) => 
    [ X from Y by Q is  FALFA : ALFA |- < R L L1 | A | L2 s(S, R L) >, GAMMA : FGAMMA ] next(N + 1) goals((XS, N))
-   [ N from X by 'prom-all-esp is  FALFA, freeze(ALFA) : ALFA' |- < L1 | A | L2 s(S, L) > : FGAMMA, freeze(GAMMA)  ] 
+   [ N from X by 'prom-all is  freeze(ALFA, 0, FALFA) : ALFA' |- < L1 | A | L2 s(S, L) > : freeze(GAMMA, 0, FGAMMA)  ] 
   if [ALFA1, ALFA2] := split-formulas-all(ALFA, R, [empty, empty]) /\
               ALFA' := remove-label-all(ALFA1, R, empty) .
+
+
+  op max-frozen : Set{Expression} Nat -> Nat .
+
+  eq max-frozen(([N1:Nat, < L1 | A | L2 >], FS), N2:Nat) = 
+     max-frozen(FS, max(N1:Nat, N2:Nat)) .
+
+  eq max-frozen(empty, N:Nat) = N:Nat .
+
+
+  op is-atomic : Set{Expression} -> Bool .
+
+  eq is-atomic((< L1 | F:AConcept | L2 >, FS)) = is-atomic(FS) .
+  eq is-atomic(empty) = true .
+  eq is-atomic((< L1 | A | L2 >, FS)) = false [owise] .
+
+  op unfreeze : Set{Expression} -> Set{Expression} .
+
+  rl [frozen-exchange] : 
+   [ X from Y by Q is  FALFA : ALFA |- GAMMA : FGAMMA ] next(N)  goals((X, XS)) => 
+   [ X from Y by Q is  FALFA : ALFA |- GAMMA : FGAMMA ] next(N + 1) goals((XS, N))
+   [ N from X by 'frozen-exchange is  freeze(ALFA, max-frozen(FALFA, 0) + 1, FALFA) : ALFA1 |- GAMMA1 : freeze(GAMMA, max-frozen(FGAMMA, 0) + 1, FGAMMA)  ] 
+  if is-atomic((ALFA, GAMMA)) = true /\ 
+     ALFA1  := unfreeze(FALFA) /\ GAMMA1 := unfreeze(FGAMMA) .
 
 endm
 
