@@ -193,39 +193,28 @@ mod LALC-SYSTEM is
   eq is-atomic(empty) = true .
   eq is-atomic((< L1 | A | L2 >, FS)) = false [owise] .
 
-  op unfreeze : Set{Expression} -> Set{Expression} .
+  op unfreeze : Set{Expression} FormulasTuple -> FormulasTuple .
 
-  rl [frozen-exchange] : 
+  eq unfreeze(([0 , C:LConcept], FS), [FS1, FS2]) = 
+     unfreeze(FS, [insert(C:LConcept, FS1), FS2]) .
+
+  eq unfreeze((F:FzConcept, FS), [FS1, FS2]) = 
+      unfreeze(FS, [FS1, insert(F:FzConcept, FS2)]) [owise] .
+
+  eq unfreeze(empty, FT:FormulasTuple) = FT:FormulasTuple .
+
+
+  --- remover dos frozen todos com indice ZERO. Exemplo artigo DL
+  --- ninguem com zero e nao ser empty
+
+  crl [frozen-exchange] : 
    [ X from Y by Q is  FALFA : ALFA |- GAMMA : FGAMMA ] next(N)  goals((X, XS)) => 
    [ X from Y by Q is  FALFA : ALFA |- GAMMA : FGAMMA ] next(N + 1) goals((XS, N))
-   [ N from X by 'frozen-exchange is  freeze(ALFA, max-frozen(FALFA, 0) + 1, FALFA) : ALFA1 |- GAMMA1 : freeze(GAMMA, max-frozen(FGAMMA, 0) + 1, FGAMMA)  ] 
+   [ N from X by 'frozen-exchange is  
+       freeze(ALFA, max-frozen(FALFA, 0) + 1, ALFA2) : ALFA1 |- GAMMA1 : freeze(GAMMA, max-frozen(FGAMMA, 0) + 1, GAMMA2)  ] 
   if is-atomic((ALFA, GAMMA)) = true /\ 
-     ALFA1  := unfreeze(FALFA) /\ GAMMA1 := unfreeze(FGAMMA) .
+     [ALFA1, ALFA2]   := unfreeze(FALFA, [empty, empty]) /\ 
+     [GAMMA1, GAMMA2] := unfreeze(FGAMMA, [empty, empty]) .
 
 endm
-
-eof
-
-
-mod LALC-SYSTEM-FULL is 
- inc LALC-SYSTEM .
-
- vars ALFA GAMMA : Set{Expression} .
- vars X Y N : Nat .
- var XS : Set{Nat} .
- var F : LConcept .
- var Q : Qid .
- 
- rl [weak-l] : 
-  [ X from Y by Q is      ALFA, F |- GAMMA ] next(N) goals((X, XS)) => 
-  [ X from Y by Q is      ALFA, F |- GAMMA ] next(N + 1) goals((XS, N)) 
-  [ N from X by 'weak-l is ALFA |- GAMMA ] .
-
- rl [weak-r] : 
-  [ X from Y by Q is      ALFA |- GAMMA, F ] next(N) goals((X, XS)) => 
-  [ X from Y by Q is      ALFA |- GAMMA, F ] next(N + 1) goals((XS, N)) 
-  [ N from X by 'weak-r is ALFA |- GAMMA ] .
-  
-endm  
-
 

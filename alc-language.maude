@@ -22,7 +22,6 @@ view Label from TRIV to LABEL is
  sort Elt to Label .
 endv
 
-
 fmod LALC-SYNTAX is 
  inc LABEL .
  inc LIST{Label} .

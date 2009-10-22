@@ -21,7 +21,8 @@ fmod SEQUENT-CALCULUS is
  op goals : Set{Nat} -> State .
 
  op [_from_by_is_] : Nat Nat Qid Sequent -> Goal [format (n d d d d d d d d d)] .
- op __ : Proof Proof -> Proof [ctor comm assoc] .
+ op nil : -> Proof [ctor] .
+ op __ : Proof Proof -> Proof [ctor comm assoc id: nil] .
 endfm 
 
 mod LALC-SYSTEM is 
@@ -36,17 +37,17 @@ mod LALC-SYSTEM is
  var Q : Qid .
  vars L L1 L2 L3 L4 : List{Label} .
 
-  rl [initial] : 
-   [ X from Y by Q is ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA ] goals((X, XS)) => 
-   [ X from Y by Q is ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA ] goals((XS)) .
+ rl [initial] : 
+   [ X from Y by Q is ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA ] goals((X, XS))  => 
+   [ X from Y by Q is ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA ] goals((XS))  .
 
-  rl [and-r] : 
+ rl [and-r] : 
    [ X from Y by Q is ALFA |- GAMMA, < L | A & B | nil > ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is ALFA |- GAMMA, < L | A & B | nil > ] next(N + 2) goals((XS, N, N + 1)) 
+   [ X from Y by Q is ALFA |- GAMMA, < L | A & B | nil > ] next(N + 2) goals((XS, N, N + 1))  
    [ N     from X by 'and-r is ALFA |- GAMMA, < L | A | nil > ] 
    [ N + 1 from X by 'and-r is ALFA |- GAMMA, < L | B | nil > ] .
 
-  rl [and-l] : 
+ rl [and-l] : 
    [ X from Y by Q is      ALFA, < L | A & B | nil > |- GAMMA ] next(N) goals((X, XS)) => 
    [ X from Y by Q is      ALFA, < L | A & B | nil > |- GAMMA ] next(N + 1) goals((XS, N)) 
    [ N from X by 'and-l is ALFA, < L | A | nil >, < L | B | nil > |- GAMMA ] .
@@ -119,7 +120,15 @@ mod LALC-SYSTEM is
    [ X from Y by Q is    < L1 | A | L2 R > |- GAMMA ] next(N)     goals((X, XS)) => 
    [ X from Y by Q is    < L1 | A | L2 R > |- GAMMA ] next(N + 1) goals((XS, N))
    [ N from X by 'prom-exist is  < L1 | A | L2 > |- GAMMA' ] 
-  if all-label-exist(GAMMA, R) = true /\ GAMMA' := remove-label-exist(GAMMA, R) .
+  if all-label-exist(GAMMA, R) = true /\ 
+     GAMMA' := remove-label-exist(GAMMA, R) .
+
+  crl [prom-exist-esp] : 
+   [ X from Y by Q is    empty |- GAMMA ] next(N)     goals((X, XS)) => 
+   [ X from Y by Q is    empty |- GAMMA ] next(N + 1) goals((XS, N))
+   [ N from X by 'prom-exist is  empty |- GAMMA' ] 
+  if all-label-exist(GAMMA, R) = true /\ 
+     GAMMA' := remove-label-exist(GAMMA, R) .
 
   op all-label-all        : Set{Expression} Label -> Bool .
   op remove-label-all     : Set{Expression} Label -> Set{Expression} .
