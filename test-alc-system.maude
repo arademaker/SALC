@@ -47,6 +47,7 @@ mod TEST-SYSTEM is
   eq seq(7) = < R | A | B | S > |- < R | (A & B) | S > .
   eq seq(8) = < nil | A & ALL(R, C) | nil > |- < nil | B & ALL(S,D) | nil > .
   eq seq(10) = empty |- < nil | EXIST(R, (A | ~ A)) | nil > .
+  eq seq(11) = < nil | ALL(R, (A & ~ A)) | nil > |- empty .
 
   op start : Nat -> Goal . 
   eq start(N:Nat) = [ 0 from 0 by 'init is seq(N:Nat) ] next(1) goals(0) .

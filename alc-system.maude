@@ -7,6 +7,7 @@ endv
 fmod SEQUENT-CALCULUS is
  inc LALC-AUX .
  inc SET{Expression} .
+ inc SET{Label} .
  inc SET{Nat} .
  inc NAT . 
  inc QID .
@@ -95,79 +96,117 @@ mod LALC-SYSTEM is
    [ X from Y by Q is    ALFA, < L1 | EXIST(R, A) | L2 > |- GAMMA ] next(N + 1) goals((XS, N))
    [ N from X by 'exist-l is   ALFA, < L1 | A | s(R, L1) L2 > |- GAMMA ] .
 
+
+  op all-label-exist    : Set{Expression} Label -> Bool .
+  op remove-label-exist : Set{Expression} Label Set{Expression} -> Set{Expression} .
+  op common-label-exist : Set{Expression} Set{Label} -> Set{Label} .
+
   vars LA LB : LConcept .
   var GAMMA' ALFA' : Set{Expression} .
-  
-  op all-label-exist        : Set{Expression} Label -> Bool .
-  op remove-label-exist     : Set{Expression} Label -> Set{Expression} .
-  op remove-label-exist-aux : Set{Expression} Label Set{Expression} -> Set{Expression} .
-  
-  ceq all-label-exist((LA, GAMMA), R) = all-label-exist(GAMMA, R)
-   if < L1 | A | L2 R > := LA .
+  vars FS FS1 FS2 : Set{Expression} .
+  var LS : Set{Label} .
+      
+  eq all-label-exist((< L1 | A | L2 R >, GAMMA), R) = 
+     all-label-exist(GAMMA, R) .
    
   eq all-label-exist(empty, R) = true . 
   eq all-label-exist(GAMMA, R) = false [owise] .
-  
-  eq remove-label-exist(GAMMA, R) = 
-     remove-label-exist-aux(GAMMA, R, empty) .
-     
-  eq remove-label-exist-aux((< L1 | A | L2 R >, GAMMA), R, GAMMA') = 
-     remove-label-exist-aux(GAMMA, R, (GAMMA', < L1 | A | L2 >)) .
 
-  eq remove-label-exist-aux(empty, R, GAMMA) = GAMMA .
+  eq remove-label-exist((< L1 | A | L2 R >, GAMMA), R, GAMMA') = 
+     remove-label-exist(GAMMA, R, (GAMMA', < L1 | A | L2 >)) .
+
+  eq remove-label-exist(empty, R, GAMMA) = GAMMA .
+
+  eq common-label-exist((< L1 | A | L2 R >, FS1), LS) =
+     common-label-exist(FS1, insert(R, LS)) .
+
+  eq common-label-exist(empty, LS) = LS .
+
+  eq common-label-exist((X:Expression, FS1), LS) =
+     common-label-exist(FS1, LS) [owise] .
      
   crl [prom-exist] : 
    [ X from Y by Q is    < L1 | A | L2 R > |- GAMMA ] next(N)     goals((X, XS)) => 
    [ X from Y by Q is    < L1 | A | L2 R > |- GAMMA ] next(N + 1) goals((XS, N))
    [ N from X by 'prom-exist is  < L1 | A | L2 > |- GAMMA' ] 
   if all-label-exist(GAMMA, R) = true /\ 
-     GAMMA' := remove-label-exist(GAMMA, R) .
+     GAMMA' := remove-label-exist(GAMMA, R, empty) .
 
-  crl [prom-exist-esp] : 
+  crl [prom-exist-e] : 
    [ X from Y by Q is    empty |- GAMMA ] next(N)     goals((X, XS)) => 
    [ X from Y by Q is    empty |- GAMMA ] next(N + 1) goals((XS, N))
-   [ N from X by 'prom-exist is  empty |- GAMMA' ] 
-  if all-label-exist(GAMMA, R) = true /\ 
-     GAMMA' := remove-label-exist(GAMMA, R) .
+   [ N from X by 'prom-exist-e is  empty |- GAMMA' ] 
+  if LS := common-label-exist(GAMMA, empty) /\ 
+     | LS | = 1 /\ R := LS /\ 
+     GAMMA' := remove-label-exist(GAMMA, R, empty) .
 
-  op all-label-all        : Set{Expression} Label -> Bool .
-  op remove-label-all     : Set{Expression} Label -> Set{Expression} .
-  op remove-label-all-aux : Set{Expression} Label Set{Expression} -> Set{Expression} .
+
+  op all-label-all    : Set{Expression} Label -> Bool .
+  op remove-label-all : Set{Expression} Label Set{Expression} -> Set{Expression} .
+  op common-label-all : Set{Expression} Set{Label} -> Set{Label} .
+
+---   op all?       : Expression -> Bool .
+---   op quantifier : Expression -> Label .
+
+---   eq all?(< R L1 | A | nil >) = true .
+---   eq all?(< R L L1 | A | L2 s(S, R L) >) = true .
+---   eq all?(< L1 | A | L2 >) = false [owise] .
+
+---   eq quantifier(< R L1 | A | nil >) = R .
+---   eq quantifier(< R L L1 | A | L2 s(S, R L) >) = R .
+---   eq quantifier(< L1 | A | L2 R >) = R .
+
   
-  ceq all-label-all((LA, ALFA), R) = all-label-exist(ALFA, R)
-   if < R L L1 | A | L2 s(S, R L) > := LA .
+  eq all-label-all((< R L L1 | A | L2 s(S, R L) >, ALFA), R) = 
+     all-label-all(ALFA, R) .
    
-  ceq all-label-all((LA, ALFA), R) = all-label-exist(ALFA, R)
-   if < R L1 | A | nil > := LA .
+  eq all-label-all((< R L1 | A | nil >, ALFA), R) = 
+     all-label-all(ALFA, R) .
 
   eq all-label-all(empty, R) = true . 
   eq all-label-all(ALFA, R) = false [owise] .
   
-  eq remove-label-all(ALFA, R) = 
-     remove-label-all-aux(ALFA, R, empty) .
-     
-  eq remove-label-all-aux((< R L1 | A | nil >, ALFA), R, ALFA') = 
-     remove-label-all-aux(ALFA, R, (ALFA', < L1 | A | nil >)) .
+  eq remove-label-all((< R L1 | A | nil >, ALFA), R, ALFA') = 
+     remove-label-all(ALFA, R, (ALFA', < L1 | A | nil >)) .
 
-  eq remove-label-all-aux((< R L L1 | A | L2 s(S, R L) >, ALFA), R, ALFA') = 
-     remove-label-all-aux(ALFA, R, (ALFA', < L L1 | A | L2 s(S, L) >)) .
+  eq remove-label-all((< R L L1 | A | L2 s(S, R L) >, ALFA), R, ALFA') = 
+     remove-label-all(ALFA, R, (ALFA', < L L1 | A | L2 s(S, L) >)) .
      
-  eq remove-label-all-aux(empty, R, ALFA) = ALFA .
-     
+  eq remove-label-all(empty, R, ALFA) = ALFA .
+
+  eq common-label-all((< R L L1 | A | L2 s(S, R L) >, FS1), LS) =
+     common-label-all(FS1, insert(R, LS)) .
+
+  eq common-label-all((< R L1 | A | nil >, FS1), LS) =
+     common-label-all(FS1, insert(R, LS)) .
+
+  eq common-label-all(empty, LS) = LS .
+
+  eq common-label-all((X:Expression, FS1), LS) =
+     common-label-all(FS1, LS) [owise] .
+          
   crl [prom-all-esp] : 
    [ X from Y by Q is    ALFA |- < R L1 | A | nil > ] next(N)     goals((X, XS)) => 
    [ X from Y by Q is    ALFA |- < R L1 | A | nil > ] next(N + 1) goals((XS, N))
    [ N from X by 'prom-all-esp is  ALFA' |- < L1 | A | nil >  ] 
-  if all-label-all(ALFA, R) = true /\ ALFA' := remove-label-all(ALFA, R) .
+  if all-label-all(ALFA, R) = true /\ ALFA' := remove-label-all(ALFA, R, empty) .
 
   crl [prom-all] : 
    [ X from Y by Q is    ALFA |- < R L L1 | A | L2 s(S, R L) > ] next(N)     goals((X, XS)) => 
    [ X from Y by Q is    ALFA |- < R L L1 | A | L2 s(S, R L) > ] next(N + 1) goals((XS, N))
    [ N from X by 'prom-all is  ALFA' |- < L1 | A | L2 s(S, L) >  ] 
-  if all-label-all(ALFA, R) = true /\ ALFA' := remove-label-all(ALFA, R) .
-  
+  if all-label-all(ALFA, R) = true /\ ALFA' := remove-label-all(ALFA, R, empty) .
 
+  crl [prom-all-e] : 
+   [ X from Y by Q is    ALFA |- empty ] next(N)     goals((X, XS)) => 
+   [ X from Y by Q is    ALFA |- empty ] next(N + 1) goals((XS, N))
+   [ N from X by 'prom-all-e is  ALFA' |- empty ] 
+  if LS := common-label-all(ALFA, empty) /\
+     | LS | = 1 /\ R := LS /\ 
+     ALFA' := remove-label-all(ALFA, R, empty) .
+  
 endm
+
 
 mod LALC-SYSTEM-FULL is 
  inc LALC-SYSTEM .

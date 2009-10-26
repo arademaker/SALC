@@ -4,9 +4,11 @@ view Expression from TRIV to LALC-SYNTAX is
  sort Elt to Expression .
 endv
 
+
 fmod SEQUENT-CALCULUS is
  inc LALC-AUX .
  inc SET{Expression} .
+ inc SET{Label} .
  inc SET{Nat} .
  inc NAT . 
  inc QID .
