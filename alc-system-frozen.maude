@@ -108,7 +108,6 @@ mod LALC-SYSTEM is
   vars GAMMA1 GAMMA2 GAMMA' ALFA' ALFA1 ALFA2 : Set{Expression} .
   vars FS FS1 FS2 : Set{Expression} .
 
-
   op freeze : Set{Expression} Nat Set{Expression} -> Set{Expression} .
 
   eq freeze((< L1 | A | L2 >, FS1), N:Nat, FS) = 
@@ -132,7 +131,7 @@ mod LALC-SYSTEM is
   op remove-label-exist : Set{Expression} Label Set{Expression} -> Set{Expression} .
 
   eq remove-label-exist((< L1 | A | L2 R >, FS1), R, FS2) = 
-     remove-label-exist(FS2, R, insert(< L1 | A | L2 >, FS2)) .
+     remove-label-exist(FS1, R, insert(< L1 | A | L2 >, FS2)) .
 
   eq remove-label-exist(empty, R, FS) = FS .
 
@@ -216,8 +215,9 @@ mod LALC-SYSTEM is
    [ N from X by 'frozen-exchange is  
        freeze(ALFA, max-frozen(FALFA, 0) + 1, ALFA2) : ALFA1 |- GAMMA1 : freeze(GAMMA, max-frozen(FGAMMA, 0) + 1, GAMMA2)  ] 
   if is-atomic((ALFA, GAMMA)) = true /\ 
-     [ALFA1, ALFA2]   := unfreeze(FALFA, [empty, empty]) /\ 
-     [GAMMA1, GAMMA2] := unfreeze(FGAMMA, [empty, empty]) .
+     [ALFA1, ALFA2]   := unfreeze(FALFA, [empty, empty])  /\ 
+     [GAMMA1, GAMMA2] := unfreeze(FGAMMA, [empty, empty]) /\
+     union(ALFA1, GAMMA1) =/= empty .
 
 endm
 

@@ -16,23 +16,40 @@ mod TEST-SYSTEM is
   eq  seq(6) = empty : < S | A & B | R >, < R | A & B | S > |- < R | (A | B) | S >, < S | (A | B) | R > : empty .
   eq  seq(7) = empty : < R | A | B | S > |- < R | (A & B) | S > : empty .
   eq  seq(8) = empty : < nil | A & ALL(R, C) | nil > |- < nil | B & ALL(S,D) | nil > : empty .
-  eq  seq(9) = empty : < nil | A | R >, < nil | B | R > |- < nil | C | R >, < nil | D | S > : empty .
-  eq seq(10) = empty : < R | A | nil >, < R | B | nil > |- < R | C | nil >, < S | D | nil > : empty .
 
-  --- \exist R \bot \equiv \bot
+  eq  seq(9) = empty : < nil | A | R >, < nil | B | R > |- < nil | C | R >, < nil | D | R > : empty .
+  eq seq(10) = empty : < nil | A | R >, < nil | B | R > |- < nil | C | R >, < nil | D | S > : empty .
 
-  eq seq(11) = empty : < nil | EXIST(R, (A & ~ A)) | nil > |- empty : empty .
-  eq seq(12) = empty : < nil | EXIST(R, (A & ~ A)) | nil > |- < nil | (A & ~ A) | nil > : empty .
-  eq seq(13) = empty : < nil | (A & ~ A) | nil > |- < nil | EXIST(R, (A & ~ A)) | nil > : empty .
+  eq seq(11) = empty : < nil | A & ~ A | R >, < nil | B | R > |- < nil | C | R > : empty .
+  eq seq(12) = empty : < nil | A & ~ A | R >, < nil | B | R > |- < nil | C | S > : empty .
 
-  --- \forall R.\top \equiv \top
+  eq seq(13) = empty : < R | C | nil > |- < R | A | ~ A | nil >, < R | B | nil > : empty .
+  eq seq(14) = empty : < S | C | nil > |- < R | A | ~ A | nil >, < R | B | nil > : empty .
 
-  eq seq(14) = empty : < nil | ALL(R, (A | ~ A)) | nil > |- < nil | (A | ~ A) | nil > : empty .
-  eq seq(15) = empty : < nil | (A | ~ A) | nil > |- < nil | ALL(R, (A | ~ A)) | nil > : empty .
-  eq seq(16) = empty : empty |- < nil | ALL(R, (A | ~ A)) | nil >  : empty .
+---   --- \exist R \bot \equiv \bot
+
+---   eq seq(11) = empty : < nil | EXIST(R, (A & ~ A)) | nil > |- empty : empty .
+---   eq seq(12) = empty : < nil | EXIST(R, (A & ~ A)) | nil > |- < nil | (A & ~ A) | nil > : empty .
+---   eq seq(13) = empty : < nil | (A & ~ A) | nil > |- < nil | EXIST(R, (A & ~ A)) | nil > : empty .
+
+---   --- \forall R.\top \equiv \top
+
+---   eq seq(14) = empty : < nil | ALL(R, (A | ~ A)) | nil > |- < nil | (A | ~ A) | nil > : empty .
+---   eq seq(15) = empty : < nil | (A | ~ A) | nil > |- < nil | ALL(R, (A | ~ A)) | nil > : empty .
+---   eq seq(16) = empty : empty |- < nil | ALL(R, (A | ~ A)) | nil >  : empty .
 
   op start : Nat -> Goal . 
   eq start(N:Nat) = [ 0 from 0 by 'init is seq(N:Nat) ] next(1) goals(0) .
   
 endm
+
+search start(11) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+search start(12) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+search start(13) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+search start(14) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+
+search [1] start(11) =>! P:Proof goals(empty) .
+search [1] start(12) =>! P:Proof goals(empty) .
+search [1] start(13) =>! P:Proof goals(empty) .
+search [1] start(14) =>! P:Proof goals(empty) .
 
