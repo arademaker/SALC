@@ -5,10 +5,13 @@ fmod ALC-SYNTAX is
  subsort ARole < Role .
 
  ops ALL EXIST : Role Concept -> Concept .
- ops CTRUE CFALSE : -> Concept .
+ ops CTRUE CFALSE : -> AConcept .
  op _&_ : Concept Concept -> Concept [gather (e E) prec 31] .
  op _|_ : Concept Concept -> Concept [gather (e E) prec 32] .
  op ~_  : Concept -> Concept [prec 30] .
+
+ eq ~ CTRUE = CFALSE .
+ eq ~ CFALSE = CTRUE .
 endfm
 
 fmod LABEL is 

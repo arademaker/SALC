@@ -19,6 +19,18 @@ mod TEST-SYSTEM is
   eq  seq(9) = empty : < nil | A | R >, < nil | B | R > |- < nil | C | R >, < nil | D | S > : empty .
   eq seq(10) = empty : < R | A | nil >, < R | B | nil > |- < R | C | nil >, < S | D | nil > : empty .
 
+  --- \exist R \bot \equiv \bot
+
+  eq seq(11) = empty : < nil | EXIST(R, (A & ~ A)) | nil > |- empty : empty .
+  eq seq(12) = empty : < nil | EXIST(R, (A & ~ A)) | nil > |- < nil | (A & ~ A) | nil > : empty .
+  eq seq(13) = empty : < nil | (A & ~ A) | nil > |- < nil | EXIST(R, (A & ~ A)) | nil > : empty .
+
+  --- \forall R.\top \equiv \top
+
+  eq seq(14) = empty : < nil | ALL(R, (A | ~ A)) | nil > |- < nil | (A | ~ A) | nil > : empty .
+  eq seq(15) = empty : < nil | (A | ~ A) | nil > |- < nil | ALL(R, (A | ~ A)) | nil > : empty .
+  eq seq(16) = empty : empty |- < nil | ALL(R, (A | ~ A)) | nil >  : empty .
+
   op start : Nat -> Goal . 
   eq start(N:Nat) = [ 0 from 0 by 'init is seq(N:Nat) ] next(1) goals(0) .
   

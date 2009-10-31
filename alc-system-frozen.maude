@@ -38,9 +38,12 @@ mod LALC-SYSTEM is
  var Q : Qid .
  vars L L1 L2 L3 L4 : List{Label} .
 
-  rl [initial] : 
-   [ X from Y by Q is FALFA : ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA : FGAMMA ] goals((X, XS)) => 
-   [ X from Y by Q is FALFA : ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA : FGAMMA ] goals((XS)) .
+---   rl [initial] : 
+---    [ X from Y by Q is FALFA : ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA : FGAMMA ] goals((X, XS)) => 
+---    [ X from Y by Q is FALFA : ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA : FGAMMA ] goals((XS)) .
+
+  eq [ X from Y by Q is FALFA : ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA : FGAMMA ] goals((X, XS)) =
+     [ X from Y by Q is FALFA : ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA : FGAMMA ] goals((XS)) .
 
   rl [and-r] : 
    [ X from Y by Q is FALFA : ALFA |- GAMMA, < L | A & B | nil > : FGAMMA ] next(N) goals((X, XS)) => 
@@ -112,8 +115,8 @@ mod LALC-SYSTEM is
      freeze(FS1, N:Nat, insert([ N:Nat , < L1 | A | L2 > ], FS)) .
   eq freeze(empty, N:Nat, FS) = FS .
      
-  
   sort FormulasTuple .
+
   op [_,_] : Set{Expression} Set{Expression} -> FormulasTuple [ctor] .
 
   op split-formulas-exist : Set{Expression} Label FormulasTuple -> FormulasTuple .
@@ -139,7 +142,6 @@ mod LALC-SYSTEM is
    [ N from X by 'prom-exist is  freeze(ALFA, 0, FALFA) : < L1 | A | L2 > |- GAMMA' : freeze(GAMMA, 0, FGAMMA) ] 
   if [GAMMA1, GAMMA2] := split-formulas-exist(GAMMA, R, [empty, empty]) /\ 
                GAMMA' := remove-label-exist(GAMMA1, R, empty) .
-
 
   op split-formulas-all : Set{Expression} Label FormulasTuple -> FormulasTuple .
 
@@ -204,7 +206,6 @@ mod LALC-SYSTEM is
       unfreeze(FS, [FS1, insert(F:FzConcept, FS2)]) [owise] .
 
   eq unfreeze(empty, FT:FormulasTuple) = FT:FormulasTuple .
-
 
   --- remover dos frozen todos com indice ZERO. Exemplo artigo DL
   --- ninguem com zero e nao ser empty
