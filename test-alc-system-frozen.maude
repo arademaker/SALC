@@ -19,6 +19,12 @@ mod TEST-SYSTEM is
 
   eq  seq(9) = empty : < nil | A | R >, < nil | B | R > |- < nil | C | R >, < nil | D | R > : empty .
   eq seq(10) = empty : < nil | A | R >, < nil | B | R > |- < nil | C | R >, < nil | D | S > : empty .
+  eq seq(15) = empty : < nil | A | S >, < nil | B | R > |- < nil | C | R >, < nil | D | R > : empty .
+
+  eq seq(16) = empty : < R | A | nil >, < R | B | nil > |- < R | C | nil >, < R | D | nil > : empty .
+  eq seq(17) = empty : < R | A | nil >, < R | B | nil > |- < R | C | nil >, < S | D | nil > : empty .
+  eq seq(18) = empty : < R | A | nil >, < S | B | nil > |- < R | C | nil >, < R | D | nil > : empty .
+
 
   eq seq(11) = empty : < nil | A & ~ A | R >, < nil | B | R > |- < nil | C | R > : empty .
   eq seq(12) = empty : < nil | A & ~ A | R >, < nil | B | R > |- < nil | C | S > : empty .
@@ -42,6 +48,17 @@ mod TEST-SYSTEM is
   eq start(N:Nat) = [ 0 from 0 by 'init is seq(N:Nat) ] next(1) goals(0) .
   
 endm
+
+eof
+
+search [1] start(9) =>! P:Proof goals(empty) .
+search [1] start(10) =>! P:Proof goals(empty) .
+search [1] start(15) =>! P:Proof goals(empty) .
+search [1] start(16) =>! P:Proof goals(empty) .
+search [1] start(17) =>! P:Proof goals(empty) .
+search [1] start(18) =>! P:Proof goals(empty) .
+
+eof
 
 search start(11) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
 search start(12) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .

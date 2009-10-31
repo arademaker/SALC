@@ -108,12 +108,13 @@ mod LALC-SYSTEM is
   vars GAMMA1 GAMMA2 GAMMA' ALFA' ALFA1 ALFA2 : Set{Expression} .
   vars FS FS1 FS2 : Set{Expression} .
 
-  op freeze : Set{Expression} Nat Set{Expression} -> Set{Expression} .
+  op freeze  : Set{Expression} Nat Set{Expression} -> Set{Expression} .
 
-  eq freeze((< L1 | A | L2 >, FS1), N:Nat, FS) = 
-     freeze(FS1, N:Nat, insert([ N:Nat , < L1 | A | L2 > ], FS)) .
+  eq freeze((LA, FS1), N:Nat, FS) = 
+     freeze(FS1, N:Nat, insert([N:Nat , LA], FS)) .
+
   eq freeze(empty, N:Nat, FS) = FS .
-     
+
   sort FormulasTuple .
 
   op [_,_] : Set{Expression} Set{Expression} -> FormulasTuple [ctor] .
@@ -198,8 +199,8 @@ mod LALC-SYSTEM is
 
   op unfreeze : Set{Expression} FormulasTuple -> FormulasTuple .
 
-  eq unfreeze(([0 , C:LConcept], FS), [FS1, FS2]) = 
-     unfreeze(FS, [insert(C:LConcept, FS1), FS2]) .
+  eq unfreeze(([0 , LA], FS), [FS1, FS2]) = 
+     unfreeze(FS, [insert(LA, FS1), FS2]) .
 
   eq unfreeze((F:FzConcept, FS), [FS1, FS2]) = 
       unfreeze(FS, [FS1, insert(F:FzConcept, FS2)]) [owise] .
@@ -213,8 +214,9 @@ mod LALC-SYSTEM is
    [ X from Y by Q is  FALFA : ALFA |- GAMMA : FGAMMA ] next(N)  goals((X, XS)) => 
    [ X from Y by Q is  FALFA : ALFA |- GAMMA : FGAMMA ] next(N + 1) goals((XS, N))
    [ N from X by 'frozen-exchange is  
-       freeze(ALFA, max-frozen(FALFA, 0) + 1, ALFA2) : ALFA1 |- GAMMA1 : freeze(GAMMA, max-frozen(FGAMMA, 0) + 1, GAMMA2)  ] 
+       freeze(ALFA, M:Nat, ALFA2) : ALFA1 |- GAMMA1 : freeze(GAMMA, M:Nat, GAMMA2)  ] 
   if is-atomic((ALFA, GAMMA)) = true /\ 
+     M:Nat := max-frozen(union(FALFA, FGAMMA), 0) + 1     /\
      [ALFA1, ALFA2]   := unfreeze(FALFA, [empty, empty])  /\ 
      [GAMMA1, GAMMA2] := unfreeze(FGAMMA, [empty, empty]) /\
      union(ALFA1, GAMMA1) =/= empty .
