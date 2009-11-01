@@ -1,0 +1,48 @@
+
+About
+=====
+
+SALC is a Labeled Sequent Calculus for ALC, a basic Description Logic
+language [1]. This project is about the implementation of SALC in
+Maude [2].
+
+We implemented two versions of SALC. A deterministic and a non
+deterministic version of SALC. The deterministic version used the idea
+of frozen formulas to avoid backtracking in the search of proof
+procedure.
+
+The Sequent Calculus implemented here is presented in a series of
+papers listed in the bottom of this file. This deduction system for
+ALC is part of my thesis.
+
+[1] http://en.wikipedia.org/wiki/Description_logic
+    http://dl.kr.org/
+[2] http://maude.cs.uiuc.edu/
+
+Documentation
+=============
+
+To do.
+
+People
+======
+
+ * Alexandre Rademaker (PUC-Rio)
+   http://web.me.com/arademaker
+ * Edward Hermann Haeusler (PUC-Rio)
+   http://www.inf.puc-rio.br/~hermann/
+
+
+Papers
+======
+
+RADEMAKER, A. ; HAEUSLER, E. H. . Toward Short and Structural
+ALC-Reasoning Explanations: A Sequent Calculus Approach. In: Brazilian
+Symposium on Artificial Intelligence, 2008, Salvador. Advances in
+Artificial Intelligence - SBIA 2008. Heidelberg : Springer Berlin,
+2008. v. 5249. p. 167-176.
+
+RADEMAKER, A. ; HAEUSLER, E. H. ; Pereira, L. C. . On the Proof Theory
+of ALC. In: 15th Brazilian Logic Conference, 2008,
+Paraty. Pre-Proceddings, 2008.
+
