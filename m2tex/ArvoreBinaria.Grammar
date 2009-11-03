@@ -1,0 +1,23 @@
+#ifndef ARVBIN_GRAMMAR
+#define ARVBIN_GRAMMAR
+
+define nodo
+	[number] [referencia] [referencia] [referencia] [NL]
+end define
+
+define referencia
+	[number][status] | 
+	[nulo]
+end define
+
+define nulo
+	'nil
+end define
+
+define status
+	'visitado | 
+	'naoVisitado |
+	'pai
+end define
+
+#endif

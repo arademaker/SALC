@@ -1,0 +1,28 @@
+[0 from 0 by ’init is 
+< nil | EXIST(child, CTRUE) & ALL(child, ~ EXIST(child, ~ Doctor)) | nil > |- 
+< nil | EXIST(child, ALL(child, Doctor)) | nil > ] 
+[1 from 0 by ’and-l is 
+< nil | ALL(child, ~ EXIST(child, ~ Doctor)) | nil >, < nil | EXIST(child, CTRUE) | nil > |- 
+< nil | EXIST(child, ALL(child, Doctor)) | nil >] 
+[2 from 1 by ’exist-l is 
+< nil | CTRUE | child >, < nil | ALL(child, ~ EXIST(child, ~ Doctor)) | nil > |- 
+< nil | EXIST(child, ALL(child, Doctor)) | nil >] 
+[3 from 2 by ’forall-l is< nil | CTRUE | child >, < child | ~ EXIST(child, ~ Doctor) | nil > |- 
+< nil | EXIST(child, ALL(child, Doctor)) | nil >] 
+[4 from 3 by ’exist-r is 
+< nil | CTRUE | child >, < child | ~ EXIST(child, ~ Doctor) | nil > |- 
+< nil | ALL(child, Doctor) | child >] 
+[6 from 5 by ’neg-l is 
+< nil | CTRUE | child > |- < nil | EXIST(child, ~ Doctor) | child >, 
+< child | Doctor | child >] 
+[5 from 4 by ’forall-r is 
+< nil | CTRUE | child >, < child | ~ EXIST(child, ~ Doctor) | nil > |- 
+< child | Doctor | child >] 
+[7 from 6 by ’prom-exist is 
+< nil | CTRUE | nil > |- < nil | EXIST(child, ~ Doctor) | nil >, < child | Doctor | nil >] 
+[9 from 8 by ’neg-r is 
+< nil | CTRUE | nil >, < child | Doctor | nil > |- < child | Doctor | nil >] 
+[10 from 9 by ’weak-l is < child | Doctor | nil > |- < child | Doctor | nil >] 
+[11 from 10 by ’prom-all-esp is < nil | Doctor | nil > |- < nil | Doctor | nil > ] 
+[8 from 7 by ’exist-r is 
+< nil | CTRUE | nil > |- < nil | ~ Doctor | child >, <child | Doctor | nil >]

@@ -1,0 +1,440 @@
+#ifndef ARVBIN_RUL
+#define ARVBIN_RUL
+
+function criarArvoreBinaria NumeroDaVez [number] TotalDeNodos [number] TabelaDeOrdens [repeat ordem]
+	replace [repeat nodo]
+		Arvore [repeat nodo]
+	
+	where
+		NumeroDaVez [< TotalDeNodos]
+	
+	construct NodoVazio [nodo]
+		0 'nil 'nil 'nil
+		
+	construct NovoNodo [nodo]
+		NodoVazio [criarNodo NumeroDaVez TabelaDeOrdens]
+	
+	construct NovaArvore [repeat nodo]
+		Arvore[. NovoNodo]
+	
+	construct ProximoNumero [number]
+		NumeroDaVez [+ 1]
+	
+	by
+		NovaArvore [criarArvoreBinaria ProximoNumero TotalDeNodos TabelaDeOrdens]
+end function
+
+function criarNodo NumeroDaVez [number] TabelaDeOrdens [repeat ordem]
+	replace [nodo]
+		Nodo [nodo]
+	
+	construct RefVazia [referencia]
+		'nil
+	
+	construct RefFilhoEsq [referencia]
+		RefVazia [obterRefFilhoEsq NumeroDaVez TabelaDeOrdens]
+	
+	construct RefFilhoDir [referencia]
+		RefVazia [obterRefFilhoDir NumeroDaVez TabelaDeOrdens]
+	
+	construct RefPai [referencia]
+		RefVazia [obterRefPai NumeroDaVez TabelaDeOrdens]
+		
+	construct NovoNodo [nodo]
+		NumeroDaVez RefFilhoEsq RefFilhoDir RefPai
+	
+	by
+		NovoNodo
+end function
+
+function obterRefFilhoEsq NumeroDaVez [number] TabelaDeOrdens [repeat ordem]
+	replace [referencia]
+		Referencia [referencia]
+	
+	construct Controle [number]
+		0
+	
+	construct FilhoEsq [number]
+		Controle [obterFilhoEsq1 NumeroDaVez TabelaDeOrdens][obterFilhoEsq2 NumeroDaVez TabelaDeOrdens]
+	
+	construct ReferenciaVazia [referencia]
+		'nil
+	
+	construct NovaReferencia [referencia]
+		ReferenciaVazia [obterRefenciaFilho FilhoEsq] 
+	
+	by
+		NovaReferencia
+end function
+
+function obterRefFilhoDir NumeroDaVez [number] TabelaDeOrdens [repeat ordem]
+	replace [referencia]
+		Referencia [referencia]
+	
+	construct Controle [number]
+		0
+	
+	construct FilhoDir [number]
+		Controle [obterFilhoDir NumeroDaVez TabelaDeOrdens]
+	
+	construct ReferenciaVazia [referencia]
+		'nil
+		
+	construct NovaReferencia [referencia]
+		ReferenciaVazia [obterRefenciaFilho FilhoDir]
+	
+	by
+		NovaReferencia
+end function
+
+function obterRefPai NumeroDaVez [number] TabelaDeOrdens [repeat ordem]
+	replace [referencia]
+		Referencia [referencia]
+	
+	construct Controle [number]
+		NumeroDaVez
+	
+	construct Pai [number]
+		Controle [obterPai NumeroDaVez TabelaDeOrdens]
+
+	construct ReferenciaVazia [referencia]
+		'nil
+		
+	construct NovaReferencia [referencia]
+		ReferenciaVazia [obterReferenciaPai Controle Pai]
+	
+	by
+		NovaReferencia
+end function
+
+function obterRefenciaFilho N [number]
+	replace [referencia]
+		Referencia [referencia]
+	
+	where
+		N[~= 0]
+	
+	by
+		N 'naoVisitado
+end function
+
+function obterReferenciaPai Controle [number] N [number]
+	replace [referencia]
+		Referencia [referencia]
+	
+	where
+		N [~= Controle]
+	
+	by
+		N 'pai
+end function
+
+function obterFilhoEsq1 NumeroDaVez [number] TabelaDeOrdens [repeat ordem]
+	replace [number]
+		N [number]
+	
+	deconstruct * [ordem] TabelaDeOrdens
+		NumeroProcurado [number] 'from NumeroDaVez
+	
+	by
+		NumeroProcurado
+end function
+		
+function obterFilhoEsq2 NumeroDaVez [number] TabelaDeOrdens [repeat ordem]
+	replace [number]
+		N [number]
+	
+	deconstruct * [repeat ordem] TabelaDeOrdens
+		Numero [number] 'from NumeroDaVez
+		NumeroProcurado [number] 'from NumeroDaVez
+		Resto [repeat ordem]
+	
+	by
+		NumeroProcurado
+end function
+
+function obterFilhoDir NumeroDaVez [number] TabelaDeOrdens [repeat ordem]
+	replace [number]
+		N [number]
+	
+	deconstruct * [repeat ordem] TabelaDeOrdens
+		NumeroProcurado [number] 'from NumeroDaVez
+		Numero [number] 'from NumeroDaVez
+		Resto [repeat ordem]
+	
+	by
+		NumeroProcurado
+end function
+
+function obterPai NumeroDaVez [number] TabelaDeOrdens [repeat ordem]
+	replace [number]
+		N [number]
+	
+	deconstruct * [ordem] TabelaDeOrdens
+		NumeroDaVez 'from NumeroProcurado [number]
+	
+	by
+		NumeroProcurado
+end function
+
+function percursoSimetrico Nodo [nodo] Arvore [repeat nodo]
+	replace [repeat number]
+		Percurso [repeat number]
+	
+	export Arvore
+	
+	construct PercursoAtualizado [repeat number]
+		Percurso [concatenaNoPercurso Nodo]
+	
+	construct ProximoNodo [nodo]
+		Nodo [irProximoNodo]
+		
+	construct DoisUltimosTermos [repeat number]
+		PercursoAtualizado [obterDoisUltimos]
+	
+	%construct zeroZero [repeat number]
+	%	0 0
+	
+	deconstruct not DoisUltimosTermos
+		0 0
+	
+	import Arvore
+	
+	by
+		PercursoAtualizado [percursoSimetrico ProximoNodo Arvore]
+end function
+
+function irProximoNodo
+	replace [nodo]
+		NodoOriginal [nodo]
+		
+	construct ProximoNodo1 [nodo]
+		NodoOriginal [irEsquerda]
+	
+	construct ProximoNodo2 [nodo]
+		ProximoNodo1 [irDireita NodoOriginal]
+	
+	construct ProximoNodo3 [nodo]
+		ProximoNodo2 [irIrmao NodoOriginal ProximoNodo1]
+	
+	by
+		ProximoNodo3
+end function
+
+function irEsquerda
+	replace [nodo]
+		NodoOriginal [nodo]
+	
+	deconstruct NodoOriginal
+		Chave [number] FilhoEsq [referencia] FilhoDir [referencia] Pai [referencia]
+		
+	deconstruct not FilhoEsq
+		'nil
+	
+	deconstruct not * [status] FilhoEsq
+		'visitado
+		
+	construct NodoEsq [nodo]
+		NodoOriginal [buscaNodoPorReferencia FilhoEsq]
+	
+	import Arvore [repeat nodo]
+	
+	construct ArvoreAtualizada [repeat nodo]
+		Arvore [marcarVisitadoEsq Chave]
+	
+	export Arvore
+		ArvoreAtualizada
+	
+	by
+		NodoEsq
+end function
+
+function irDireita NodoOriginal [nodo]
+	replace [nodo]
+		NodoEntrada [nodo]
+	
+	deconstruct NodoOriginal
+		ChaveOriginal [number] FilhoEsqOriginal [referencia] FilhoDirOriginal [referencia] PaiOriginal [referencia]
+		
+	deconstruct NodoEntrada
+		ChaveEntrada [number] FilhoEsqEntrada [referencia] FilhoDirEntrada [referencia] PaiEntrada [referencia]
+		
+	where
+		ChaveEntrada[= ChaveOriginal]
+		
+	deconstruct not FilhoDirEntrada
+		'nil
+	
+	deconstruct not * [status] FilhoDirEntrada
+		'visitado
+	
+	construct NodoDir [nodo]
+		NodoOriginal [buscaNodoPorReferencia FilhoDirEntrada]
+	
+	import Arvore [repeat nodo]
+	
+	construct ArvoreAtualizada [repeat nodo]
+		Arvore [marcarVisitadoDir ChaveEntrada]
+	
+	export Arvore
+		ArvoreAtualizada
+	
+	by
+		NodoDir
+end function
+
+function irIrmao NodoOriginal [nodo] NodoAposIrDireita [nodo]
+	replace [nodo]
+		NodoEntrada [nodo]
+	
+	deconstruct NodoOriginal
+		ChaveOriginal [number] FilhoEsqOriginal [referencia] FilhoDirOriginal [referencia] PaiOriginal [referencia]
+		
+	deconstruct NodoAposIrDireita
+		ChaveAID [number] FilhoEsqAID [referencia] FilhoDirAID [referencia] PaiAID [referencia]	
+		
+	deconstruct NodoEntrada
+		ChaveEntrada [number] FilhoEsqEntrada [referencia] FilhoDirEntrada [referencia] PaiEntrada [referencia]
+		
+	where
+		ChaveEntrada[= ChaveOriginal]
+	
+	where
+		ChaveEntrada[= ChaveAID]
+		
+	deconstruct not PaiEntrada
+		'nil
+	
+	construct NodoPai [nodo]
+		NodoEntrada [buscaNodoPorReferencia PaiEntrada]
+	
+	by
+		NodoPai [irDireita NodoPai]
+	
+end function
+		
+function buscaNodoPorReferencia RefNodoDesejado [referencia]
+	replace [nodo]
+		NodoEntrada [nodo]
+	
+	import Arvore [repeat nodo]
+	
+	deconstruct RefNodoDesejado
+		ChaveProcurada [number] Status [status] 
+
+	deconstruct * [nodo] Arvore
+		ChaveProcurada FilhoEsq [referencia] FilhoDir [referencia] Pai [referencia]
+	
+	construct NodoProcurado [nodo]
+		ChaveProcurada FilhoEsq FilhoDir Pai
+		
+	by
+		NodoProcurado
+end function
+	
+function marcarVisitadoEsq Chave [number] 
+	replace * [nodo]
+		 Chave Ref [number] 'naoVisitado FilhoDir [referencia] Pai [referencia]
+	by
+		Chave Ref 'visitado FilhoDir Pai
+end function
+
+function marcarVisitadoDir Chave [number] 
+	replace * [nodo]
+		 Chave FilhoEsq [referencia] Ref [number] 'naoVisitado Pai [referencia]
+	by
+		Chave FilhoEsq Ref 'visitado Pai
+end function
+
+function concatenaNoPercurso Nodo [nodo]
+	replace [repeat number]
+		Percurso0 [repeat number]
+	
+	construct Percurso1 [repeat number]  
+		Percurso0 [concatenaSeForFolha Nodo]
+	
+	construct Percurso2 [repeat number]
+		Percurso1 [concatenaComDoisFilhos Nodo]
+	
+	construct Percurso3 [repeat number]
+		Percurso2 [concatenaComFilhoEsq Nodo]
+	
+	construct Percurso4 [repeat number]
+		Percurso3 [concatenaComFilhoDir Nodo]
+	
+	by
+		Percurso4
+end function
+
+function concatenaSeForFolha Nodo [nodo]
+	replace [repeat number]
+		Percurso [repeat number]
+	
+	deconstruct Nodo
+		Chave [number] FilhoEsq [referencia] FilhoDir [referencia] Pai [referencia]
+	
+	deconstruct * FilhoEsq
+		'nil
+		
+	by
+		Percurso [. Chave]
+end function
+
+function concatenaComDoisFilhos Nodo [nodo]
+	replace [repeat number]
+		Percurso [repeat number]
+	
+	deconstruct Nodo
+		Chave [number] FilhoEsq [referencia] FilhoDir [referencia] Pai [referencia]
+	
+	deconstruct * [status] FilhoDir
+		'visitado
+	
+	by
+		Percurso [. Chave]
+end function
+
+function concatenaComFilhoEsq Nodo [nodo]
+	replace [repeat number]
+		Percurso [repeat number]
+	
+	deconstruct Nodo
+		Chave [number] FilhoEsq [referencia] FilhoDir [referencia] Pai [referencia]
+	
+	deconstruct * [status] FilhoEsq
+		'visitado
+	
+	deconstruct * [referencia] FilhoDir
+		'nil
+	by
+		Percurso [. Chave]
+end function
+
+function concatenaComFilhoDir Nodo [nodo]
+	replace [repeat number]
+		Percurso [repeat number]
+	
+	deconstruct Nodo
+		Chave [number] FilhoEsq [referencia] FilhoDir [referencia] Pai [referencia]
+	
+	deconstruct * [status] FilhoDir
+		'visitado
+	
+	deconstruct * [referencia] FilhoEsq
+		'nil
+	by
+		Percurso [. Chave]
+end function
+
+function obterDoisUltimos
+	replace [repeat number]
+		Percurso [repeat number]
+		
+	construct PosicaoDoUltimo [number]
+		_ [length Percurso][- 1]
+	
+	by
+		Percurso [tail PosicaoDoUltimo]
+end function
+
+#endif

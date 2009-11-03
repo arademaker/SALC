@@ -1,0 +1,30 @@
+#ifndef AUXFUN_RUL
+#define AUXFUN_RUL
+
+function p X[any]
+	replace	[repeat qqtoken]
+		I [repeat qqtoken]
+	construct Q [repeat qqtoken]
+		X
+	by
+		I[. Q]
+end function
+
+function pertence Sequencia [repeat number]
+	match [number]
+		N[number]
+	
+	construct TamanhoDaSequencia[number]	
+		_[length Sequencia]
+	
+	where 
+		TamanhoDaSequencia[~= 0] 
+	
+	deconstruct Sequencia
+		Primeiro [number] Resto [repeat number]
+	
+	where
+		N[= Primeiro][pertence Resto]	 
+end function
+
+#endif

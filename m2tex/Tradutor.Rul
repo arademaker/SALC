@@ -1,0 +1,853 @@
+#ifndef TRADTUOR_RUL
+#define TRADUTOR_RUL
+
+include "ArvoreBinaria.Grammar"
+include "Tradutor.Grammar"
+include "ArvoreBinaria.Rul"
+include "FuncoesAuxiliares.Rul"
+
+function tradzuir Entrada [repeat termo] 
+	replace [repeat traducao]
+		T [repeat traducao]
+	
+	construct TabelaDeOrdens [repeat ordem]
+		_ [montarTabelaDeOrdens Entrada]
+	
+	construct PreTraducao [repeat traducao]
+		_ [montarPreTraducao Entrada]
+		
+	construct SequenciaDeComandos [repeat aux_comando]
+		_ [obterSequenciaDeComandos 0 TabelaDeOrdens]
+	
+	construct NodoVazio [repeat nodo]
+		_
+		
+	construct ArvoreBinaria [repeat nodo]
+		NodoVazio [criarArvoreBinaria 0 12 TabelaDeOrdens]
+
+	deconstruct ArvoreBinaria
+		PrimeiroNodo [nodo] Resto [repeat nodo]
+	
+	construct PercursoSimetrico [repeat number]
+		_ [percursoSimetrico PrimeiroNodo ArvoreBinaria]
+		
+	construct PreTraducaoOrdenada [repeat traducao]
+		PreTraducao [ordenarPreTraducao PercursoSimetrico PercursoSimetrico]
+	
+	construct TraducaoFinal [repeat traducao]
+		PreTraducaoOrdenada [substituirComandos SequenciaDeComandos]
+	
+	by
+		TraducaoFinal
+end function
+
+function montarTabelaDeOrdens Termo [repeat termo]
+	replace [repeat ordem]
+		Tabela [repeat ordem]
+	
+	deconstruct Termo
+		PrimeiroTermo [termo] Resto [repeat termo]
+	
+	deconstruct PrimeiroTermo
+		'[ Regra [regra] Info [informacao] ']
+	
+	deconstruct Regra
+		Ordem [ordem] 'by '’ TipoDeRegra [tipo_de_regra] 'is
+	
+	
+	construct NovaTabela [repeat ordem]
+		Tabela [adicionarNaTabela Ordem]
+	
+	by
+		NovaTabela [montarTabelaDeOrdens Resto][ordenarTabelaDeOrdens]
+end function
+
+function adicionarNaTabela Ordem [ordem]
+	replace [repeat ordem]
+		Tabela [repeat ordem]
+	
+	deconstruct not Ordem
+		0 'from 0
+	
+	by
+		Tabela [. Ordem]
+end function
+
+rule ordenarTabelaDeOrdens
+	replace [repeat ordem]
+		Tabela [repeat ordem]
+	
+	deconstruct Tabela
+		Linha1 [ordem] Linha2 [ordem] Resto [repeat ordem]
+	
+	deconstruct Linha1
+		N1 [number] 'from _ [number]
+	
+	deconstruct Linha2
+		N2 [number] 'from _ [number]
+	
+	where
+		N1 [< N2]
+	
+	construct TabelaOrdenada [repeat ordem]
+		Linha2 Linha1 Resto
+	
+	by
+		TabelaOrdenada
+end rule
+
+function montarPreTraducao Input [repeat termo]
+	replace [repeat traducao]
+		Traducao [repeat traducao]
+	
+	deconstruct Input
+		PrimeiroTermo [termo] Resto [repeat termo]
+	
+	deconstruct PrimeiroTermo
+		'[ Regra [regra]  Info [informacao] ']
+	
+	deconstruct Regra
+		Ordem [ordem] 'by '’ TipoDeRegra [tipo_de_regra] 'is
+	
+	deconstruct Ordem
+		N [number] 'from _ [number]
+	
+	construct InfoTraduzida [repeat qqtoken]
+		_ [traduzInformacao Info]
+		
+	construct RegraTraduzida [repeat qqtoken]
+		_ [traduzTipoDeRegra TipoDeRegra]
+	
+	construct TermoTraduzido [repeat qqtoken]
+		InfoTraduzida [p RegraTraduzida]
+	
+	construct TermoTraduzidoNumerado [traducao]
+		N TermoTraduzido
+	
+	construct TraducaoAtualizada [repeat traducao]
+		Traducao [. TermoTraduzidoNumerado]
+	
+	by
+		TraducaoAtualizada [montarPreTraducao Resto]
+end function
+
+function traduzInformacao Informacao [informacao]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+		
+	deconstruct Informacao
+		ListaDeConteudo1 [list conteudo] '|- ListaDeConteudo2 [list conteudo]
+	
+	construct SequenciaTraduzida1 [repeat qqtoken]
+		_ [traduzListaDeConteudo ListaDeConteudo1]
+		  
+	construct SequenciaTraduzida2 [repeat qqtoken]
+		_ [traduzListaDeConteudo ListaDeConteudo2]
+	
+	by
+		F[p SequenciaTraduzida1]
+		 [p '\fCenter]
+		 [p SequenciaTraduzida2]
+end function
+
+function traduzListaDeConteudo ListaDeConteudo [list conteudo]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+	
+	deconstruct ListaDeConteudo
+		Primeiro [conteudo] ', Resto [list conteudo]
+	
+	construct PrimeiroTraduzido [repeat qqtoken]
+		_ [traduzConteudo Primeiro]
+	
+	construct PaginaAtualizada [repeat qqtoken]  
+		F[p PrimeiroTraduzido]
+	
+	construct TamanhoDoResto [number]
+		_ [length Resto]
+		
+	by
+		PaginaAtualizada [colocaVirugla TamanhoDoResto]	
+						 [traduzListaDeConteudo Resto]
+end function
+
+function traduzConteudo Conteudo [conteudo]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+
+	deconstruct Conteudo
+		'< F1 [formula] '| F2 [formula] '| F3 [formula] '>
+		
+	construct SequenciaDeFormulas [repeat formula]
+		F1 F2 F3
+
+	construct Zero [number]
+		0
+	
+	construct NumeroDeFormulasNil [number]
+		Zero [contaFormulasNil SequenciaDeFormulas]
+
+	by
+		F [traduzConteudoSimples NumeroDeFormulasNil F1 F2 F3]
+		  [traduzConteudoLf NumeroDeFormulasNil F1 F2 F3]
+end function
+
+function traduzConteudoSimples NumeroDeFormulasNil [number] F1 [formula] F2 [formula] F3 [formula]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+		
+	where
+		NumeroDeFormulasNil [>= 2]
+	
+	by
+		F [traduzFormula F1]
+		  [traduzFormula F2]
+		  [traduzFormula F3]
+end function
+
+function traduzConteudoLf NumeroDeFormulasNil [number] F1 [formula] F2 [formula] F3 [formula]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+		
+	where
+		NumeroDeFormulasNil [< 2]
+	
+	by
+		F [p '\lf{]
+		  [traduzFormula F1]
+		  [p '}{]
+		  [traduzFormula F2]
+		  [p '}{]
+		  [traduzFormula F3]
+		  [p '}]
+end function
+
+function contaFormulasNil SequenciaDeFormulas [repeat formula]
+	replace [number]
+		Contador [number]
+	
+	deconstruct SequenciaDeFormulas
+		Primeira [formula] Resto [repeat formula]
+		
+	deconstruct Primeira
+		Predicado [predicado]
+		
+	construct ContadorAtualizado [number]
+		Contador[incrementaCasoNil Predicado]
+	
+	by
+		ContadorAtualizado [contaFormulasNil Resto]
+end function
+
+function incrementaCasoNil Predicado [predicado]
+	replace [number]
+		N [number]
+	
+	deconstruct Predicado
+		PredicadoVazio [predicado_vazio]
+	
+	by
+		N[+ 1]
+end function
+
+
+function traduzFormula Formula [formula]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+		
+	deconstruct Formula
+		Predicado [predicado]
+	
+	by
+		F [traduzPredicado1 Predicado]
+		  [traduzPredicado2 Predicado]
+		  [traduzPredicado3 Predicado]
+		  [traduzPredicado4 Predicado]
+end function
+
+function traduzPredicado1 Predicado [predicado]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+	
+	deconstruct Predicado
+		Expressao [expressao]
+	
+	by
+		F [traduzExpressao1 Expressao]
+		  [traduzExpressao2 Expressao]
+		  [traduzExpressao3 Expressao]
+end function
+
+function traduzPredicado2 Predicado [predicado]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+		
+	deconstruct Predicado
+		Expressao [expressao] Virgula [virgula] OutroPredicado [predicado]
+			
+	by
+		F [traduzExpressao1 Expressao]
+		  [traduzExpressao2 Expressao]
+		  [traduzExpressao3 Expressao]
+		  [traduzVirgula Virgula]
+		  [traduzPredicado1 OutroPredicado]
+		  [traduzPredicado2 OutroPredicado]
+		  [traduzPredicado3 OutroPredicado]
+		  [traduzPredicado4 OutroPredicado]
+end function
+
+function traduzPredicado3 Predicado [predicado]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+		
+	deconstruct Predicado
+		Expressao [expressao] OperadorConjuncao [operador_conjuncao] OutroPredicado [predicado]
+			
+	by
+		F [traduzExpressao1 Expressao]
+		  [traduzExpressao2 Expressao]
+		  [traduzExpressao3 Expressao]
+		  [traduzOperadorConjuncao OperadorConjuncao]
+		  [traduzPredicado1 OutroPredicado]
+		  [traduzPredicado2 OutroPredicado]
+		  [traduzPredicado3 OutroPredicado]
+		  [traduzPredicado4 OutroPredicado]
+end function
+
+
+function traduzPredicado4 Predicado [predicado]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+	
+	deconstruct Predicado
+		PredicadoVazio [predicado_vazio]
+		
+	construct Vazio [repeat qqtoken]
+		%
+	
+	by
+		F[p Vazio]
+		
+end function
+
+function traduzExpressao1 Expressao [expressao]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+		
+	deconstruct Expressao
+		ParteAtomica [parte_atomica]
+	
+	by
+		F [traduzParteAtomica1 ParteAtomica][traduzParteAtomica2 ParteAtomica]
+end function
+
+function traduzExpressao2 Expressao [expressao]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+		
+	deconstruct Expressao
+		OperadorNegacao [operador_negacao] OutraExpressao [expressao]
+		
+	by
+		F [traduzOperadorNegacao OperadorNegacao]
+		  [p '(]
+		  [traduzExpressao1 OutraExpressao]
+		  [traduzExpressao2 OutraExpressao]
+		  [traduzExpressao3 OutraExpressao]
+		  [p ')]
+end function
+
+function traduzExpressao3 Expressao [expressao]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+		
+	deconstruct Expressao
+		OperadorQuantitativo [operador_quantitativo] '( Formula [formula] ')
+		
+	by
+		F [traduzOperadorQuantitativo1 OperadorQuantitativo]
+		  [traduzOperadorQuantitativo2 OperadorQuantitativo]
+		  [traduzFormula Formula]
+end function
+
+function traduzVirgula Virgula [virgula]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+	
+	deconstruct Virgula
+		',
+		
+	by
+		F[p '.]
+end function
+
+function traduzOperadorConjuncao OperadorConjuncao [operador_conjuncao]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+	
+	deconstruct OperadorConjuncao
+		'&
+	
+	by
+		F[p '\dland]
+end function
+
+function traduzOperadorNegacao OperadorNegacao [operador_negacao]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+	
+	deconstruct OperadorNegacao
+		'~
+	
+	by
+		F[p '\neg]
+end function
+
+function traduzOperadorQuantitativo1 OperadorQuantitativo [operador_quantitativo]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+	
+	deconstruct OperadorQuantitativo
+		'EXIST
+	
+	by
+		F[p '\exists]
+end function
+
+function traduzOperadorQuantitativo2 OperadorQuantitativo [operador_quantitativo]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+	
+	deconstruct OperadorQuantitativo
+		'ALL
+	
+	by
+		F[p '\forall]
+end function
+
+function traduzParteAtomica1 ParteAtomica [parte_atomica]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+	
+	deconstruct ParteAtomica
+		Variavel [id]
+	
+	by
+		F[p Variavel]
+end function
+
+function traduzParteAtomica2 ParteAtomica [parte_atomica]
+	replace [repeat qqtoken]
+		F [repeat qqtoken]
+	
+	deconstruct ParteAtomica
+		CTrue [c_true]
+
+	deconstruct CTrue
+		'CTRUE
+		
+	construct Q [qqtoken]
+		\top
+	
+	by
+		F[p Q]
+end function
+
+function colocaVirugla Numero [number]
+	replace [repeat qqtoken]
+		I [repeat qqtoken]
+		
+	where
+		Numero[> 0]
+	
+	by
+		I[p ',]
+end function
+	
+function repeatParaLista Sequencia [repeat qqtoken] % nao usada
+    replace [list qqtoken]
+        I [list qqtoken]
+
+    construct L [list qqtoken]
+        _ [, each Sequencia]
+
+    by
+        L
+end function
+
+
+function traduzTipoDeRegra TipoDeRegra [tipo_de_regra]
+	replace [repeat qqtoken]
+		Tipo [repeat qqtoken]
+	
+	by
+		Tipo [traduzTipoDeRegra1 TipoDeRegra]
+			 [traduzTipoDeRegra2 TipoDeRegra]
+			 [traduzTipoDeRegra3 TipoDeRegra]
+			 [traduzTipoDeRegra4 TipoDeRegra]
+			 [traduzTipoDeRegra5 TipoDeRegra]
+			 [traduzTipoDeRegra6 TipoDeRegra]
+			 [traduzTipoDeRegra7 TipoDeRegra]
+			 [traduzTipoDeRegra8 TipoDeRegra]
+			 
+end function
+
+function traduzTipoDeRegra1 TipoDeRegra [tipo_de_regra]
+	replace [repeat qqtoken]
+		Tipo [repeat qqtoken]
+	
+	deconstruct * TipoDeRegra
+		'init
+	
+	by
+		
+end function
+
+function traduzTipoDeRegra2 TipoDeRegra [tipo_de_regra]
+	replace [repeat qqtoken]
+		Tipo [repeat qqtoken]
+	
+	deconstruct * TipoDeRegra
+		'and- Id [id]
+	
+	construct TipoTraduzido [repeat qqtoken]
+		$\dland$-
+	
+	construct TipoTraduzidoComId [repeat qqtoken]
+		TipoTraduzido[p Id]
+	
+	by
+		 _ [p $] [p \rl{ ] [p TipoTraduzidoComId] [p }] [p $]
+end function
+
+function traduzTipoDeRegra3 TipoDeRegra [tipo_de_regra]
+	replace [repeat qqtoken]
+		Tipo [repeat qqtoken]
+	
+	deconstruct * TipoDeRegra
+		'exist- Id [id]
+	
+	construct TipoTraduzido [repeat qqtoken]
+		$\exists$-
+	
+	construct TipoTraduzidoComId [repeat qqtoken]
+		TipoTraduzido [p Id]
+	
+	by
+		 _ [p $] [p \rl{ ] [p TipoTraduzidoComId] [p }] [p $]
+end function
+
+function traduzTipoDeRegra4 TipoDeRegra [tipo_de_regra]
+	replace [repeat qqtoken]
+		Tipo [repeat qqtoken]
+	
+	deconstruct * TipoDeRegra
+		'forall- Id [id]
+	
+	construct TipoTraduzido [repeat qqtoken]
+		$\forall$-
+	
+	construct TipoTraduzidoComId [repeat qqtoken]
+		TipoTraduzido[p Id]
+	
+	by
+		 _ [p $] [p \rl{ ] [p TipoTraduzidoComId] [p }] [p $]
+end function
+
+function traduzTipoDeRegra5 TipoDeRegra [tipo_de_regra]
+	replace [repeat qqtoken]
+		Tipo [repeat qqtoken]
+	
+	deconstruct * TipoDeRegra
+		'weak- Id [id]
+	
+	construct TipoTraduzido [repeat qqtoken]
+		weak-	
+	
+	construct TipoTraduzidoComId [repeat qqtoken]
+		TipoTraduzido[p Id]
+	
+	by
+		_ [p $] [p \rl{ ] [p TipoTraduzidoComId] [p }] [p $]
+end function
+
+function traduzTipoDeRegra6 TipoDeRegra [tipo_de_regra]
+	replace [repeat qqtoken]
+		Tipo [repeat qqtoken]
+	
+	deconstruct * TipoDeRegra
+		'neg- Id [id]
+	
+	construct TipoTraduzido [repeat qqtoken]
+		$\neg$-
+	
+	construct TipoTraduzidoComId [repeat qqtoken]
+		TipoTraduzido[p Id]
+	
+	by
+		_ [p $] [p \rl{ ] [p TipoTraduzidoComId] [p }] [p $]
+end function
+
+function traduzTipoDeRegra7 TipoDeRegra [tipo_de_regra]
+	replace [repeat qqtoken]
+		Tipo [repeat qqtoken]
+	
+	deconstruct * TipoDeRegra
+		'prom-exist
+	
+	construct TipoTraduzido [repeat qqtoken]
+		prom-exist
+	
+	by
+		 _ [p $] [p \rl{ ] [p TipoTraduzido] [p }] [p $]
+end function
+
+function traduzTipoDeRegra8 TipoDeRegra [tipo_de_regra]
+	replace [repeat qqtoken]
+		Tipo [repeat qqtoken]
+	
+	deconstruct * TipoDeRegra
+		'prom-all-esp
+	
+	construct TipoTraduzido [repeat qqtoken]
+		prom-$\forall$-esp
+	
+	by
+		 _ [p $] [p \rl{ ] [p TipoTraduzido] [p }] [p $]
+end function
+
+function obterSequenciaDeComandos NumeroDaVez [number] TabelaDeOrdens [repeat ordem]
+	replace [repeat aux_comando]
+		SequenciaDeComandos [repeat aux_comando]
+	
+	construct ColunaDireita [repeat number]
+		_ [obterColunaDireita TabelaDeOrdens]
+	
+	construct TamanhoDaColuna [number]
+		_ [length ColunaDireita]
+	
+	where not
+		NumeroDaVez [> TamanhoDaColuna]
+	
+	construct zero [number]
+		0
+	
+	construct NumeroDeOcorrencias [number]
+		zero [contarOcorrencias NumeroDaVez ColunaDireita]
+	
+	construct NovaSequencia [repeat aux_comando]
+		SequenciaDeComandos [adicionarComando NumeroDaVez NumeroDeOcorrencias]
+	
+	construct ProximoNumero [number]
+		NumeroDaVez [+ 1]
+	
+	by
+		NovaSequencia [obterSequenciaDeComandos ProximoNumero TabelaDeOrdens]
+end function
+
+function contarOcorrencias NumeroDaVez [number] Sequencia [repeat number]
+	replace [number]
+		N [number]
+	
+	deconstruct Sequencia
+		Primeiro [number] Resto [repeat number]
+	
+	construct novoN [number]
+		N [incrementaSeIgual NumeroDaVez Primeiro]
+	
+	by
+		novoN [contarOcorrencias NumeroDaVez Resto] 
+end function
+
+function incrementaSeIgual NumeroDaVez [number] NumeroDaSequencia [number]
+	replace [number]
+		N [number]
+	
+	where
+		NumeroDaVez [= NumeroDaSequencia]
+	
+	by
+		N[+ 1]
+end function
+
+function obterColunaDireita Tabela [repeat ordem]
+	replace [repeat number]
+		Coluna [repeat number]
+	
+	deconstruct Tabela
+		PrimeiraLinha [ordem] Resto [repeat ordem]
+	
+	deconstruct PrimeiraLinha
+		N1 [number] 'from N2[number]
+	
+	construct NovaColuna [repeat number]
+		N2 Coluna
+		
+	by
+		NovaColuna [obterColunaDireita Resto]
+end function
+
+function adicionarComando NumeroDaVez [number] NumeroDeOcorrencias [number]
+	replace [repeat aux_comando]
+		SequenciaDeComandos [repeat aux_comando]
+	
+	by
+		SequenciaDeComandos [adicionarComandoFolha NumeroDaVez NumeroDeOcorrencias]
+							[adicionarComandoUnario NumeroDaVez NumeroDeOcorrencias]
+							[adicionarComandoBinario NumeroDaVez NumeroDeOcorrencias]
+end function
+
+function adicionarComandoFolha NumeroDaVez [number] NumeroDeOcorrencias [number]
+	replace [repeat aux_comando]
+		SequenciaDeComandos [repeat aux_comando]
+	
+	deconstruct NumeroDeOcorrencias
+		0
+	
+	construct AuxComando [aux_comando]
+		'\AxiomInf$ NumeroDaVez
+	
+	by
+		AuxComando SequenciaDeComandos
+end function
+
+function adicionarComandoUnario NumeroDaVez [number] NumeroDeOcorrencias [number]
+	replace [repeat aux_comando]
+		SequenciaDeComandos [repeat aux_comando]
+	
+	deconstruct NumeroDeOcorrencias
+		1
+	
+	construct AuxComando [aux_comando]
+		'\UnaryInf$ NumeroDaVez 
+	
+	by
+		AuxComando SequenciaDeComandos
+end function
+
+function adicionarComandoBinario NumeroDaVez [number] NumeroDeOcorrencias [number]
+	replace [repeat aux_comando]
+		SequenciaDeComandos [repeat aux_comando]
+	
+	deconstruct NumeroDeOcorrencias
+		2
+	
+	construct AuxComando [aux_comando]
+		'\BinaryInf$ NumeroDaVez  
+	
+	by
+		AuxComando SequenciaDeComandos
+end function
+
+function ordenarPreTraducao RestoDoPercurso [repeat number] PercursoSimetrico [repeat number]
+	replace [repeat traducao]
+		PreTraducao [repeat traducao]
+	
+	deconstruct RestoDoPercurso
+		TermoDaVez [number] NovoRestoDoPercurso [repeat number]
+	
+	construct PreTraducaoOrdenada [repeat traducao]
+		PreTraducao [alterarOrdemTraducao1 TermoDaVez PercursoSimetrico][alterarOrdemTraducao2 TermoDaVez PercursoSimetrico]
+	
+	by
+		PreTraducaoOrdenada [ordenarPreTraducao NovoRestoDoPercurso PercursoSimetrico]
+end function
+
+function alterarOrdemTraducao1 TermoDaVez [number] PercursoSimetrico [repeat number]
+	deconstruct * PercursoSimetrico
+		 UltimoTermoTratado [number] TermoDaVez R [repeat number]
+	
+	replace * [repeat traducao]
+		UltimoTermoTratado UltimoConteudoTratado [repeat qqtoken] 
+		TermoASerTratado [number] ConteudoASerTratado [repeat qqtoken] 
+		TermosNaoTratados [repeat traducao]
+	
+	deconstruct * [traducao] TermosNaoTratados 
+		TermoDaVez ConteudoDoTermoDaVez [repeat qqtoken]
+	
+	construct TermosNaoTratadosAtulizado [repeat traducao]
+		TermosNaoTratados [salvarTermoASerAlterado TermoDaVez ConteudoDoTermoDaVez TermoASerTratado ConteudoASerTratado]
+	
+	by
+		UltimoTermoTratado UltimoConteudoTratado TermoDaVez ConteudoDoTermoDaVez TermosNaoTratadosAtulizado
+end function
+
+function alterarOrdemTraducao2 TermoDaVez [number] PercursoSimetrico [repeat number]
+	deconstruct PercursoSimetrico
+		TermoDaVez Resto [repeat number]
+	
+	replace [repeat traducao]
+		PrimeiroTermo [number] PrimeiroConteudo [repeat qqtoken] TermosNaoTratados [repeat traducao]
+	
+	deconstruct * [traducao] TermosNaoTratados 
+		TermoDaVez ConteudoDoTermoDaVez [repeat qqtoken]
+	
+	construct TermosNaoTratadosAtulizado [repeat traducao]
+		TermosNaoTratados [salvarTermoASerAlterado TermoDaVez ConteudoDoTermoDaVez PrimeiroTermo PrimeiroConteudo]
+	
+	by
+		TermoDaVez ConteudoDoTermoDaVez TermosNaoTratadosAtulizado
+end function
+
+function salvarTermoASerAlterado TermoDaVez [number] ConteudoDoTermoDaVez [repeat qqtoken] TermoASerTratado [number] ConteudoASerTratado [repeat qqtoken]
+	replace * [traducao]
+		TermoDaVez ConteudoDoTermoDaVez
+	by
+		TermoASerTratado ConteudoASerTratado
+end function
+
+function substituirComandos SequenciaDeComandos [repeat aux_comando]
+		replace [repeat traducao]
+			Traducao [repeat traducao]
+		
+		deconstruct Traducao
+			PrimeiroTermo [traducao] RestoTraducao [repeat traducao]
+	
+		construct PrimeiroTermoComComando [traducao]
+			PrimeiroTermo [trocarPorComando SequenciaDeComandos]
+
+		by
+			PrimeiroTermoComComando RestoTraducao[substituirComandos SequenciaDeComandos]
+end function
+
+function trocarPorComando SequenciaDeComandos [repeat aux_comando]
+	replace [traducao]
+		Traducao [traducao]
+
+	deconstruct SequenciaDeComandos
+		AuxComando [aux_comando] RestoComandos [repeat aux_comando]
+
+	construct NovaTraducao [traducao]
+		Traducao [atualizarTraducaoSeIgual AuxComando]
+
+	by
+		NovaTraducao [trocarPorComando RestoComandos]
+end function
+
+function atualizarTraducaoSeIgual AuxComando [aux_comando]
+	replace [traducao]
+		Traducao [traducao]
+
+	deconstruct Traducao
+		NumeroTermo [number] Conteudo [repeat qqtoken]
+
+	deconstruct AuxComando
+		Comando [comando] NumeroComando [number]
+
+	where
+		NumeroTermo [= NumeroComando]
+	
+	construct ComandoQqtoken [repeat qqtoken]
+			_[p Comando]
+		
+	construct NovoConteudo [repeat qqtoken]
+			ComandoQqtoken [p Conteudo]
+		
+	construct NovaTraducao [traducao]
+			NovoConteudo
+	
+	by
+		NovaTraducao
+end function
+
+#endif

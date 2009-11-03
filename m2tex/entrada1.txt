@@ -1,0 +1,8 @@
+[0 from 0 by 'init is < nil | A & ~ A | nil > |- < nil | EXIST(R, A & ~ A) | nil >] 
+[1 from 0 by 'and-l is < nil | A | nil >, < nil | ~ A | nil > |- < nil | EXIST(R, A & ~ A) | nil >] 
+[2 from 1 by 'neg-l is < nil | A | nil > |- < nil | A | nil >, < nil | EXIST(R, A & ~ A) | nil >] 
+[3 from 2 by 'exist-r is < nil | A | nil > |- < nil | A | nil >, < nil | A & ~ A | R >] 
+[4 from 3 by 'weak-l is empty |- < nil | A | nil >, < nil | A & ~ A | R >] 
+[5 from 4 by 'weak-r is empty |- < nil | A & ~ A | R >] 
+[6 from 5 by 'weak-r is empty |- empty] 
+

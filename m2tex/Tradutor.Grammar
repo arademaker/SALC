@@ -1,0 +1,136 @@
+#ifndef GRAMATICA_GRAMMAR
+#define GRAMATICA_GRAMMAR
+
+compounds
+	|-
+	\top
+	\lf{
+	}{
+	\fCenter
+	\exists
+	\neg
+	\dland
+	\forall
+	\rl{
+	and-
+	exist-
+	forall-
+	weak-
+	neg-
+	prom-exist
+	prom-all-esp
+	$\dland$-
+	$\exists$-
+	$\forall$-
+	$\neg$-
+	prom-$\forall$-esp
+	\AxiomInf$
+	\UnaryInf$
+	\BinaryInf$
+end compounds
+
+define program
+	[entrada]|[saida]
+end define
+
+define entrada
+	[repeat termo]
+end define
+
+define saida
+	[repeat traducao]
+end define
+
+define traducao
+	[opt number][repeat qqtoken][NL]
+end define
+
+define termo
+	'[ [regra] [informacao] '] [NL]
+end define
+
+define informacao
+	[list conteudo] '|- [list conteudo]
+end define
+
+define regra
+	[ordem] 'by '’ [tipo_de_regra] 'is
+end define
+
+define ordem 
+	[number] 'from [number] [NL] %depois tirar o NL !!!!
+end define
+
+define tipo_de_regra			% TIRAR NL!
+	'init			|
+	'and-[id]		|
+	'exist-[id]		|
+	'forall-[id]	        |
+	'weak-[id]		|
+	'neg-[id]		|
+  	'prom-exist		|
+	'prom-all-esp
+end define
+
+define conteudo
+	'< [formula] '| [formula] '| [formula] '>
+end define
+
+define formula
+	[predicado]
+end define
+
+define predicado
+	[predicado_vazio] |
+	[expressao] |
+	[expressao] [virgula] [predicado] | % o ultimo é predicado ou só expressao resolve o problema?
+	[expressao] [operador_conjuncao] [predicado]
+end define
+
+define expressao
+	[parte_atomica] |
+	[operador_negacao] [expressao] |
+	[operador_quantitativo] '( [formula] ')
+end define
+
+define predicado_vazio
+	'nil
+end define
+
+define parte_atomica
+	[c_true] |
+	[id]
+end define
+
+define c_true
+	'CTRUE
+end define
+
+define operador_negacao
+	'~
+end define
+
+define operador_conjuncao
+	'&
+end define
+
+define virgula
+	',
+end define
+
+define operador_quantitativo
+	'EXIST |
+	'ALL
+end define
+
+define aux_comando
+	[comando][number]
+end define
+
+define comando
+	'\AxiomInf$ |
+	'\UnaryInf$ |
+	'\BinaryInf$
+end define
+
+#endif
