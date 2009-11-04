@@ -1,12 +1,8 @@
 in alc-language.maude
 
-view Expression from TRIV to LALC-SYNTAX is 
- sort Elt to Expression .
-endv
-
 
 fmod SEQUENT-CALCULUS is
- inc LALC-AUX .
+ inc LALC-SYNTAX .
  inc SET{Expression} .
  inc SET{Label} .
  inc SET{Nat} .
@@ -27,10 +23,12 @@ fmod SEQUENT-CALCULUS is
  op __ : Proof Proof -> Proof [ctor comm assoc id: nil] .
 endfm 
 
+
 mod LALC-SYSTEM is 
  inc SEQUENT-CALCULUS .
  
  vars ALFA GAMMA : Set{Expression} .
+ var E : Expression .
  vars X Y N : Nat .
  var XS : Set{Nat} .
  vars A B C D : Concept .
@@ -39,6 +37,7 @@ mod LALC-SYSTEM is
  var Q : Qid .
  vars L L1 L2 L3 L4 : List{Label} .
 
+
  rl [initial] : 
    [ X from Y by Q is ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA ] goals((X, XS))  => 
    [ X from Y by Q is ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA ] goals((XS))  .
@@ -46,6 +45,21 @@ mod LALC-SYSTEM is
  rl [initial] : 
    [ X from Y by Q is < nil | CFALSE | nil > |- empty ] goals((X, XS))  => 
    [ X from Y by Q is < nil | CFALSE | nil > |- empty ] goals((XS))  .
+
+
+--- Even if considering the initial rules above, the weak-l and weak-r
+--- rules are necessary to the completeness of the system.
+
+ rl [weak-l] : 
+  [ X from Y by Q is      ALFA, E |- GAMMA ] next(N) goals((X, XS)) => 
+  [ X from Y by Q is      ALFA, E |- GAMMA ] next(N + 1) goals((XS, N)) 
+  [ N from X by 'weak-l is ALFA |- GAMMA ] .
+
+ rl [weak-r] : 
+  [ X from Y by Q is      ALFA |- GAMMA, E ] next(N) goals((X, XS)) => 
+  [ X from Y by Q is      ALFA |- GAMMA, E ] next(N + 1) goals((XS, N)) 
+  [ N from X by 'weak-r is ALFA |- GAMMA ] .
+  
 
  rl [and-r] : 
    [ X from Y by Q is ALFA |- GAMMA, < L | A & B | nil > ] next(N) goals((X, XS)) => 
@@ -213,24 +227,48 @@ mod LALC-SYSTEM is
 endm
 
 
-mod LALC-SYSTEM-FULL is 
+mod LALCQ-SYSTEM is 
  inc LALC-SYSTEM .
+ inc LALCQI-SYNTAX .
 
  vars ALFA GAMMA : Set{Expression} .
- vars X Y N : Nat .
+ vars X Y N M : Nat .
  var XS : Set{Nat} .
- var F : LConcept .
+ vars A B C D : Concept .
+ vars R S : Role .
+ var AT : AConcept .
  var Q : Qid .
- 
- rl [weak-l] : 
-  [ X from Y by Q is      ALFA, F |- GAMMA ] next(N) goals((X, XS)) => 
-  [ X from Y by Q is      ALFA, F |- GAMMA ] next(N + 1) goals((XS, N)) 
-  [ N from X by 'weak-l is ALFA |- GAMMA ] .
+ vars L L1 L2 L3 L4 : List{Label} .
 
- rl [weak-r] : 
-  [ X from Y by Q is      ALFA |- GAMMA, F ] next(N) goals((X, XS)) => 
-  [ X from Y by Q is      ALFA |- GAMMA, F ] next(N + 1) goals((XS, N)) 
-  [ N from X by 'weak-r is ALFA |- GAMMA ] .
-  
-endm  
+ rl [least-l] : 
+   [ X from Y by Q is  ALFA, < L1 | AT-LEAST(M, R, A) | L2 > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | AT-LEAST(M, R, A) | L2 > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'least-l is  ALFA, < L1 gt(M,R) | A | L2 > |- GAMMA ] .
 
+ rl [least-r] : 
+   [ X from Y by Q is  ALFA |- < L1 | AT-LEAST(M, R, A) | L2 >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < L1 | AT-LEAST(M, R, A) | L2 >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'least-r is  ALFA |- < L1 gt(M,R) | A | L2 >, GAMMA ] .
+
+ rl [most-l] : 
+   [ X from Y by Q is  ALFA, < L1 | AT-MOST(M, R, A) | L2 > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | AT-MOST(M, R, A) | L2 > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'most-l is  ALFA, < L1 lt(M,R) | A | L2 > |- GAMMA ] .
+
+ rl [most-r] : 
+   [ X from Y by Q is  ALFA |- < L1 | AT-MOST(M, R, A) | L2 >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < L1 | AT-MOST(M, R, A) | L2 >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'most-r is  ALFA |- < L1 lt(M,R) | A | L2 >, GAMMA ] .
+
+
+ --- 1. opera nas mais externas ou mais internas?
+ --- 2. usar lista a direita pode ser melhor, caso contrario tenho que
+ ---    garantir que nao existe existencial mais externo
+ --- 3. como lidar com regras nao deterministicas?
+
+ rl [quant-exist-l] : 
+   [ X from Y by Q is  ALFA, < gt(M,R) L1 | A | L2 > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < gt(M,R) L1 | A | L2 > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'least-l is  ALFA, < L1 gt(M,R) | A | L2 > |- GAMMA ] .
+
+endm

@@ -14,7 +14,7 @@ view NQ from TRIV to CHECK-1 is
 endv
 
 mod CHECK-PROOF is
-  inc LALC-SYSTEM-FULL .
+  inc LALC-SYSTEM .
   inc SET{NQ} .
 
   op get-rules : Proof Set{NQ} -> Set{NQ} .

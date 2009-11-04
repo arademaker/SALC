@@ -42,6 +42,17 @@ mod LATEX is
  op latex : Sequent -> String .
  eq latex((DELTA |- GAMMA)) = latex(DELTA) + " /fCenter " + latex(GAMMA) .
 
+ op latex : Proof -> String .
+
+ eq latex([ N0 from M by Q0 is S0 ] [ N1 from M by Q1 is S1 ] [ M from N by Q2 is S2 ] P) = 
+    latex([ N0 from M by Q0 is S0 ] [ N1 from M by Q1 is S1 ] P) + 
+    "\LeftLabel{" + latex(Q2) + "}" +
+    "\BinaryInf{" + latex(S2) + "}" .
+
+ eq latex([ N0 from M by Q0 is S0] [ M from N by Q1 is S1] P) = 
+    latex(P) + 
+    "\LeftLabel{" + latex(Q) + "}" +
+    " \UnaryInf{" + latex(S) + "}" [owise] .
 
 endm
 

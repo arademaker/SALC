@@ -14,24 +14,44 @@ fmod ALC-SYNTAX is
  eq ~ CFALSE = CTRUE .
 endfm
 
-fmod LABEL is 
+
+fmod ALCQI-SYNTAX is 
  inc ALC-SYNTAX .
+ inc NAT .
+
+ ops AT-MOST AT-LEAST : Nat Role Concept -> Concept .
+ op INV : Role -> Role .
+
+ var R : Role .
+ var C : Concept .
+
+ eq AT-LEAST(1, R, C) = EXIST(R, C) .
+endfm
+
+
+fmod LABEL is 
+ inc ALCQI-SYNTAX .
 
  sort Label .
  subsort Role < Label .
 endfm
 
+
 view Label from TRIV to LABEL is 
  sort Elt to Label .
 endv
+
 
 fmod LALC-SYNTAX is 
  inc LABEL .
  inc LIST{Label} .
 
- op s : Role List{Label} -> Label .
+ op s : Label List{Label} -> Label .
 
- vars R : Role .
+ vars L1 L2 L : List{Label} .
+ vars R S : Role .
+ vars C : Concept .
+
  eq s(R, nil) = R .
 
  sorts Expression LConcept FzConcept .
@@ -40,23 +60,16 @@ fmod LALC-SYNTAX is
  op <_|_|_> : List{Label} Concept List{Label} -> LConcept [ctor] . 
  
  op [_,_] : Nat LConcept -> FzConcept .
-endfm
 
-
-fmod LALC-AUX is 
- inc LALC-SYNTAX .
  
  sort LabelTuple .
+
  op [_,_] : List{Label} List{Label} -> LabelTuple [ctor] .
 
  op join   : List{Label} List{Label} Concept -> Concept .
  op invert : Concept -> Concept .
  op split  : List{Label} List{Label} Concept -> LabelTuple .
  op neg : List{Label} List{Label} -> LabelTuple .
- 
- vars L1 L2 L : List{Label} .
- vars R S : Role .
- vars C : Concept .
  
  eq neg(L1, L2) = split(nil, nil, invert(join(L1, L2, CTRUE))) .
 
@@ -76,3 +89,15 @@ fmod LALC-AUX is
  
 endfm
 
+
+view Expression from TRIV to LALC-SYNTAX is 
+ sort Elt to Expression .
+endv
+
+
+fmod LALCQI-SYNTAX is 
+ inc LALC-SYNTAX .
+
+ ops gt lt : Nat Label -> Label .
+
+endfm
