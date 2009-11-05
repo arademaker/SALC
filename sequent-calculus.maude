@@ -20,6 +20,10 @@ fmod SEQUENT-CALCULUS is
  op [_from_by_is_] : Nat Nat Qid Sequent -> Goal [format (n d d d d d d d d d)] .
  op nil : -> Proof [ctor] .
  op __ : Proof Proof -> Proof [ctor comm assoc] .
+
+ op _|-_ : Set{Expression} Set{Expression} -> Sequent [ctor prec 122 gather(e e)] .
+ op _:_|-_:_ : Set{Expression} Set{Expression} Set{Expression} Set{Expression} -> Sequent [ctor prec 122 gather(e e e e)] .
+ 
 endfm 
 
 

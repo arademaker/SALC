@@ -4,8 +4,6 @@ in sequent-calculus.maude
 mod LALC-SYSTEM is 
  inc SEQUENT-CALCULUS .
 
- op _|-_ : Set{Expression} Set{Expression} -> Sequent [ctor prec 122 gather(e e)] .
- 
  vars ALFA GAMMA : Set{Expression} .
  var E : Expression .
  vars X Y N : Nat .
