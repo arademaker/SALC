@@ -1,0 +1,25 @@
+
+in alc-language.maude
+
+fmod SEQUENT-CALCULUS is
+ inc LALC-SYNTAX .
+ inc SET{Expression} .
+ inc SET{Label} .
+ inc SET{Nat} .
+ inc NAT . 
+ inc QID .
+
+ sort Sequent .
+
+ sorts Goal State Proof .
+ subsort Goal State < Proof .
+
+ op next  : Nat -> State .
+ op goals : Set{Nat} -> State .
+
+ op [_from_by_is_] : Nat Nat Qid Sequent -> Goal [format (n d d d d d d d d d)] .
+ op nil : -> Proof [ctor] .
+ op __ : Proof Proof -> Proof [ctor comm assoc] .
+endfm 
+
+

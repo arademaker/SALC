@@ -1,0 +1,90 @@
+
+in alc-language.maude
+
+
+mod LALCQ-SYSTEM is 
+ inc LALC-SYSTEM .
+ inc LALCQI-SYNTAX .
+ inc INT .
+
+ vars ALFA GAMMA : Set{Expression} .
+ vars X Y N M : Nat .
+ var XS : Set{Nat} .
+ vars A B C D : Concept .
+ vars R S : Role .
+ var AT : AConcept .
+ var Q : Qid .
+ vars L L1 L2 L3 L4 : List{Label} .
+
+ --- 1. opera nas mais externas ou mais internas?
+ --- 2. usar lista a direita pode ser melhor, caso contrario tenho que
+ ---    garantir que nao existe existencial mais externo
+ --- 3. como lidar com regras nao deterministicas? m > n sss inc em um, controle de aplicacoes
+ --- 4. new provisos in ALC system rules. Note that we moved R_n and R^n for the right list!! 
+
+ rl [least-l] : 
+   [ X from Y by Q is  ALFA, < L1 | AT-LEAST(M, R, A) | L2 > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | AT-LEAST(M, R, A) | L2 > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'least-l is  ALFA, < L1 | A | gt(M,R) L2 > |- GAMMA ] .
+
+ rl [least-r] : 
+   [ X from Y by Q is  ALFA |- < L1 | AT-LEAST(M, R, A) | L2 >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < L1 | AT-LEAST(M, R, A) | L2 >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'least-r is  ALFA |- < L1 | A | gt(M,R) L2 >, GAMMA ] .
+
+ rl [most-l] : 
+   [ X from Y by Q is  ALFA, < L1 | AT-MOST(M, R, A) | L2 > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | AT-MOST(M, R, A) | L2 > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'most-l is  ALFA, < L1 | A | lt(M,R) L2 > |- GAMMA ] .
+
+ rl [most-r] : 
+   [ X from Y by Q is  ALFA |- < L1 | AT-MOST(M, R, A) | L2 >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < L1 | AT-MOST(M, R, A) | L2 >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'most-r is  ALFA |- < L1 | A | lt(M,R) L2 >, GAMMA ] .
+
+
+ rl [quant-exist-l] : 
+   [ X from Y by Q is  ALFA, < L1 | A | L2 R > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | A | L2 R > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-exist-l is  ALFA, < L1 | A | L2 gt(1,R) > |- GAMMA ] .
+
+ rl [exist-quant-r] : 
+   [ X from Y by Q is  ALFA |- < L1 | A | L2 gt(1,R) >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < L1 | A | L2 gt(1,R) >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'exist-quant-r is  ALFA |- < L1 | A | L2 R >, GAMMA ] .
+
+ --- where g(1,R) in the two rules below could be g(n,R) for n >= 1
+
+ rl [quant-exist-r] : 
+   [ X from Y by Q is  ALFA |- < L1 | A | L2 R >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < L1 | A | L2 R >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-exist-r is  ALFA |- < L1 | A | L2 gt(1,R) >, GAMMA ] .
+
+ rl [exist-quant-l] : 
+   [ X from Y by Q is  ALFA, < L1 | A | L2 gt(1,R) > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | A | L2 gt(1,R) > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'exist-quant-l is  ALFA, < L1 | A | L2 R > |- GAMMA ] .
+
+ vars m n : Nat .
+
+ rl [quant-gt-l] : 
+   [ X from Y by Q is  ALFA, < L1 | A | L2 gt(m,R) > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | A | L2 gt(m,R) > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-qt-r is  ALFA, < L1 | A | L2 gt((m - 1), R) > |- GAMMA ] .
+
+ rl [quant-gt-r] : 
+   [ X from Y by Q is  ALFA |- < L1 | A | L2 gt(m,R) >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < L1 | A | L2 gt(m,R) >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-qt-r is  ALFA |- < L1 | A | L2 gt((m + 1), R) >, GAMMA ] .
+
+ rl [quant-lt-l] : 
+   [ X from Y by Q is  ALFA, < L1 | A | L2 lt(m,R) > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | A | L2 lt(m,R) > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-lt-r is  ALFA, < L1 | A | L2 gt((m + 1), R) > |- GAMMA ] .
+
+ rl [quant-lt-r] : 
+   [ X from Y by Q is  ALFA |- < L1 | A | L2 lt(m,R) >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < L1 | A | L2 lt(m,R) >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-lt-r is  ALFA |- < L1 | A | L2 lt((m - 1), R) >, GAMMA ] .
+
+endm
