@@ -1,0 +1,127 @@
+
+in alc-system-frozen.maude 
+
+--- fmod CHECK-1 is
+---   inc QID .
+---   inc NAT .
+
+---   sort NQ .
+---   op [_,_] : Nat Qid -> NQ .
+--- endfm
+
+--- view NQ from TRIV to CHECK-1 is 
+---  sort Elt to NQ .
+--- endv
+
+--- mod CHECK-PROOF is
+---   inc LALC-SYSTEM .
+---   inc SET{NQ} .
+
+---   op get-rules : Proof Set{NQ} -> Set{NQ} .
+
+---   var L : Set{NQ} .
+---   var P : Proof .
+  
+---   eq get-rules([ N:Nat from Y:Nat by Q:Qid is S:Sequent] P, L) = 
+---      get-rules(P, ([N:Nat, Q:Qid], L)) .
+ 
+---   eq get-rules(X:Goal P, L)  = get-rules(P, L) .
+---   eq get-rules(X:State P, L) = get-rules(P, L) .
+---   eq get-rules(nil, L) = L .
+--- endm
+
+
+mod TEST-CASES is
+ inc LALC-SYSTEM .
+
+  ops A B C D E : -> AConcept .
+  ops R S T U V : -> ARole .
+
+  op seq : Nat -> Sequent .
+
+  eq seq(1) = < nil | EXIST(S, ALL(R, A)) | nil > |- < nil | EXIST(S, ALL(R, A)) | nil > .
+  eq seq(2) = < nil | ALL(S, EXIST(R, A)) | nil > |- < nil | ALL(S, EXIST(R, A)) | nil > .
+  eq seq(3) = < nil | EXIST(R, CTRUE) & ALL(R, ~ EXIST(R, ~ A)) | nil > |- < nil | EXIST(R, ALL(R, A)) | nil > .
+  eq seq(4) = < nil | A & B | nil > |- < nil | (A | B) | nil > .
+  eq seq(5) = < R | A & B | S > |- < R | (A | B) | S > .
+  eq seq(6) = < S | A & B | R >, < R | A & B | S > |- < R | (A | B) | S >, < S | (A | B) | R > . 
+  eq seq(7) = < R | A | B | S > |- < R | (A & B) | S > .
+  eq seq(8) = < nil | A & ALL(R, C) | nil > |- < nil | B & ALL(S,D) | nil > .
+
+  --- \exist R \bot \equiv \bot
+
+  eq seq(9)  = < nil | EXIST(R, (A & ~ A)) | nil > |- empty .
+  eq seq(10) = < nil | EXIST(R, (A & ~ A)) | nil > |- < nil | (A & ~ A) | nil > .
+  eq seq(11) = < nil | (A & ~ A) | nil > |- < nil | EXIST(R, (A & ~ A)) | nil > .
+
+  --- \forall R.\top \equiv \top
+
+  eq seq(12) = < nil | ALL(R, (A | ~ A)) | nil > |- < nil | (A | ~ A) | nil > .
+  eq seq(13) = < nil | (A | ~ A) | nil > |- < nil | ALL(R, (A | ~ A)) | nil > .
+  eq seq(14)  = empty |- < nil | ALL(R, (A | ~ A)) | nil >  .
+
+  eq seq(15) = empty |- < nil | EXIST(R, (A | ~ A)) | nil > .
+  eq seq(16) = < nil | EXIST(R, (A | ~ A)) | nil > |- empty .
+
+  eq seq(17) = < nil | ALL(R, (A & ~ A)) | nil > |- empty .
+  eq seq(18) = < nil | EXIST(R, (A & ~ A)) | nil > |- empty .
+
+  eq seq(19) =  < nil | A | R >, < nil | B | R > |- < nil | C | R >, < nil | D | R > .
+  eq seq(20) =  < nil | A | R >, < nil | B | R > |- < nil | C | R >, < nil | D | S > .
+  eq seq(21) =  < nil | A | S >, < nil | B | R > |- < nil | C | R >, < nil | D | R > .
+
+  eq seq(22) =  < R | A | nil >, < R | B | nil > |- < R | C | nil >, < R | D | nil > .
+  eq seq(23) =  < R | A | nil >, < R | B | nil > |- < R | C | nil >, < S | D | nil > .
+  eq seq(24) =  < R | A | nil >, < S | B | nil > |- < R | C | nil >, < R | D | nil > .
+
+  eq seq(25) =  < nil | A & ~ A | R >, < nil | B | R > |- < nil | C | R > .
+  eq seq(26) =  < nil | A & ~ A | R >, < nil | B | R > |- < nil | C | S > .
+
+  eq seq(27) =  < R | C | nil > |- < R | A | ~ A | nil >, < R | B | nil > .
+  eq seq(28) =  < S | C | nil > |- < R | A | ~ A | nil >, < R | B | nil > .
+ 
+  op child : -> ARole .
+  op Doctor : -> AConcept .
+  eq seq(29) = < nil | EXIST(child, CTRUE) & ALL(child, ~ EXIST(child, ~ Doctor)) | nil > |- < nil | EXIST(child, ALL(child, Doctor)) | nil > . 
+
+endm
+
+
+
+mod TEST is 
+ inc TEST-CASES .
+
+ op start : Nat -> Goal . 
+
+ vars ALFA GAMMA : Set{Expression} .
+
+ ceq start(N:Nat) = [ 0 from 0 by 'init is empty : ALFA |- GAMMA : empty ] next(1) goals(0) 
+   if ALFA |- GAMMA := seq(N:Nat) .
+  
+endm
+
+
+eof
+
+search [1] start(9) =>! P:Proof goals(empty) .
+search [1] start(10) =>! P:Proof goals(empty) .
+search [1] start(15) =>! P:Proof goals(empty) .
+search [1] start(16) =>! P:Proof goals(empty) .
+search [1] start(17) =>! P:Proof goals(empty) .
+search [1] start(18) =>! P:Proof goals(empty) .
+
+search start(11) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+search start(12) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+search start(13) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+search start(14) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+
+search [1] start(11) =>! P:Proof goals(empty) .
+search [1] start(12) =>! P:Proof goals(empty) .
+search [1] start(13) =>! P:Proof goals(empty) .
+search [1] start(14) =>! P:Proof goals(empty) .
+
+search start(9) =>! P:Proof goals(empty) such that [1, 'and-l] in get-rules(P:Proof, empty) /\ 
+                                                   [2, 'exist-l] in get-rules(P:Proof, empty) /\ 
+                                                   [3, 'forall-l] in get-rules(P:Proof, empty) /\ 
+                                                   [4, 'exist-r] in get-rules(P:Proof, empty) /\ 
+                                                   [5, 'forall-r] in get-rules(P:Proof, empty) .
