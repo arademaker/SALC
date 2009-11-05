@@ -182,9 +182,6 @@ mod LALC-SYSTEM is
 
   eq unfreeze(empty, FT:FormulasTuple) = FT:FormulasTuple .
 
-  --- remover dos frozen todos com indice ZERO. Exemplo artigo DL
-  --- ninguem com zero e nao ser empty
-
   crl [frozen-exchange] : 
    [ X from Y by Q is  FALFA : ALFA |- GAMMA : FGAMMA ] next(N)  goals((X, XS)) => 
    [ X from Y by Q is  FALFA : ALFA |- GAMMA : FGAMMA ] next(N + 1) goals((XS, N))
