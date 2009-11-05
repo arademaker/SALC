@@ -1,7 +1,6 @@
 
 in sequent-calculus.maude
 
-
 mod LALC-SYSTEM is 
  inc SEQUENT-CALCULUS .
 

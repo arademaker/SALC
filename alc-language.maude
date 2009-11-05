@@ -25,7 +25,7 @@ fmod ALCQI-SYNTAX is
  var R : Role .
  var C : Concept .
 
- eq AT-LEAST(1, R, C) = EXIST(R, C) .
+ --- eq AT-LEAST(1, R, C) = EXIST(R, C) .
 endfm
 
 

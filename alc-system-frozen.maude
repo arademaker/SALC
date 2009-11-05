@@ -1,7 +1,7 @@
 
 in sequent-calculus.maude
 
-mod LALC-SYSTEM is 
+mod LALCF-SYSTEM is 
  inc SEQUENT-CALCULUS .
 
  op _:_|-_:_ : Set{Expression} Set{Expression} Set{Expression} Set{Expression} -> Sequent [ctor prec 122 gather(e e e e)] .
