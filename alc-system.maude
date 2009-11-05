@@ -240,35 +240,54 @@ mod LALCQ-SYSTEM is
  var Q : Qid .
  vars L L1 L2 L3 L4 : List{Label} .
 
+ --- 1. opera nas mais externas ou mais internas?
+ --- 2. usar lista a direita pode ser melhor, caso contrario tenho que
+ ---    garantir que nao existe existencial mais externo
+ --- 3. como lidar com regras nao deterministicas? m > n sss inc em um, controle de aplicacoes
+ --- 4. new provisos in ALC system rules. Note that we moved R_n and R^n for the right list!! 
+
  rl [least-l] : 
    [ X from Y by Q is  ALFA, < L1 | AT-LEAST(M, R, A) | L2 > |- GAMMA ] next(N) goals((X, XS)) => 
    [ X from Y by Q is  ALFA, < L1 | AT-LEAST(M, R, A) | L2 > |- GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'least-l is  ALFA, < L1 gt(M,R) | A | L2 > |- GAMMA ] .
+   [ N from X by 'least-l is  ALFA, < L1 | A | gt(M,R) L2 > |- GAMMA ] .
 
  rl [least-r] : 
    [ X from Y by Q is  ALFA |- < L1 | AT-LEAST(M, R, A) | L2 >, GAMMA ] next(N) goals((X, XS)) => 
    [ X from Y by Q is  ALFA |- < L1 | AT-LEAST(M, R, A) | L2 >, GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'least-r is  ALFA |- < L1 gt(M,R) | A | L2 >, GAMMA ] .
+   [ N from X by 'least-r is  ALFA |- < L1 | A | gt(M,R) L2 >, GAMMA ] .
 
  rl [most-l] : 
    [ X from Y by Q is  ALFA, < L1 | AT-MOST(M, R, A) | L2 > |- GAMMA ] next(N) goals((X, XS)) => 
    [ X from Y by Q is  ALFA, < L1 | AT-MOST(M, R, A) | L2 > |- GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'most-l is  ALFA, < L1 lt(M,R) | A | L2 > |- GAMMA ] .
+   [ N from X by 'most-l is  ALFA, < L1 | A | lt(M,R) L2 > |- GAMMA ] .
 
  rl [most-r] : 
    [ X from Y by Q is  ALFA |- < L1 | AT-MOST(M, R, A) | L2 >, GAMMA ] next(N) goals((X, XS)) => 
    [ X from Y by Q is  ALFA |- < L1 | AT-MOST(M, R, A) | L2 >, GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'most-r is  ALFA |- < L1 lt(M,R) | A | L2 >, GAMMA ] .
+   [ N from X by 'most-r is  ALFA |- < L1 | A | lt(M,R) L2 >, GAMMA ] .
 
-
- --- 1. opera nas mais externas ou mais internas?
- --- 2. usar lista a direita pode ser melhor, caso contrario tenho que
- ---    garantir que nao existe existencial mais externo
- --- 3. como lidar com regras nao deterministicas?
 
  rl [quant-exist-l] : 
-   [ X from Y by Q is  ALFA, < gt(M,R) L1 | A | L2 > |- GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA, < gt(M,R) L1 | A | L2 > |- GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'least-l is  ALFA, < L1 gt(M,R) | A | L2 > |- GAMMA ] .
+   [ X from Y by Q is  ALFA, < L1 | A | L2 R > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | A | L2 R > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-exist-l is  ALFA, < L1 | A | L2 gt(1,R) > |- GAMMA ] .
+
+
+ --- where g(1,R) in the two rules below could be g(n,R) for n >= 1
+
+ rl [quant-exist-r] : 
+   [ X from Y by Q is  ALFA |- < L1 | A | L2 R >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < L1 | A | L2 R >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-exist-r is  ALFA |- < L1 | A | L2 gt(1,R) >, GAMMA ] .
+
+ rl [exist-quant-l] : 
+   [ X from Y by Q is  ALFA, < L1 | A | L2 gt(1,R) > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | A | L2 gt(1,R) > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'exist-quant-l is  ALFA, < L1 | A | L2 R > |- GAMMA ] .
+
+ rl [exist-quant-r] : 
+   [ X from Y by Q is  ALFA |- < L1 | A | L2 gt(1,R) >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < L1 | A | L2 gt(1,R) >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'exist-quant-r is  ALFA |- < L1 | A | L2 R >, GAMMA ] .
 
 endm
