@@ -1,6 +1,9 @@
 #ifndef GRAMATICA_GRAMMAR
 #define GRAMATICA_GRAMMAR
 
+#pragma -idchars "-"
+#pragma -w 200
+
 compounds
 	|-
 	\top
@@ -12,22 +15,14 @@ compounds
 	\dland
 	\forall
 	\rl{
-	and-
-	exist-
-	forall-
-	weak-
-	neg-
-	prom-exist
-	prom-all-esp
-	$\dland$-
-	$\exists$-
-	$\forall$-
-	$\neg$-
-	prom-$\forall$-esp
 	\AxiomInf$
 	\UnaryInf$
 	\BinaryInf$
 end compounds
+
+tokens 
+	charlit "" 
+end tokens
 
 define program
 	[entrada]|[saida]
@@ -49,31 +44,28 @@ define termo
 	'[ [regra] [informacao] '] [NL]
 end define
 
+define regra
+	[ordem] 'by [tipo_de_regra] 'is
+end define
+
 define informacao
 	[list conteudo] '|- [list conteudo]
 end define
 
-define regra
-	[ordem] 'by '’ [tipo_de_regra] 'is
+define conteudo
+	'< [formula] '| [formula] '| [formula] '>
 end define
 
 define ordem 
-	[number] 'from [number] [NL] %depois tirar o NL !!!!
+	[number] 'from [number]
 end define
 
-define tipo_de_regra			% TIRAR NL!
-	'init			|
-	'and-[id]		|
-	'exist-[id]		|
-	'forall-[id]	        |
-	'weak-[id]		|
-	'neg-[id]		|
-  	'prom-exist		|
-	'prom-all-esp
+define tipo_de_regra
+	[plica][id]
 end define
 
-define conteudo
-	'< [formula] '| [formula] '| [formula] '>
+define plica
+	'
 end define
 
 define formula
@@ -83,7 +75,7 @@ end define
 define predicado
 	[predicado_vazio] |
 	[expressao] |
-	[expressao] [virgula] [predicado] | % o ultimo é predicado ou só expressao resolve o problema?
+	[expressao] [virgula] [predicado] |
 	[expressao] [operador_conjuncao] [predicado]
 end define
 

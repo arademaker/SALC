@@ -96,7 +96,7 @@ mod TEST is
  vars ALFA GAMMA : Set{Expression} .
 
  ceq start(N:Nat) = [ 0 from 0 by 'init is empty : ALFA |- GAMMA : empty ] next(1) goals(0) 
-   if ALFA |- GAMMA := seq(N:Nat) .
+  if ALFA |- GAMMA := seq(N:Nat) .
   
 endm
 

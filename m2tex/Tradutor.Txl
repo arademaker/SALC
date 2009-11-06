@@ -7,6 +7,10 @@ include "Tradutor.Grammar"
 include "ArvoreBinaria.Rul"
 include "Tradutor.Rul"
 
+redefine program
+	[repeat termo]  |[repeat traducao]
+end redefine
+
 function main
 	replace [program]
 		I [repeat termo]

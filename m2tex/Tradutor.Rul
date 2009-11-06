@@ -52,7 +52,7 @@ function montarTabelaDeOrdens Termo [repeat termo]
 		'[ Regra [regra] Info [informacao] ']
 	
 	deconstruct Regra
-		Ordem [ordem] 'by '’ TipoDeRegra [tipo_de_regra] 'is
+		Ordem [ordem] 'by  TipoDeRegra [tipo_de_regra] 'is
 	
 	
 	construct NovaTabela [repeat ordem]
@@ -107,7 +107,7 @@ function montarPreTraducao Input [repeat termo]
 		'[ Regra [regra]  Info [informacao] ']
 	
 	deconstruct Regra
-		Ordem [ordem] 'by '’ TipoDeRegra [tipo_de_regra] 'is
+		Ordem [ordem] 'by TipoDeRegra [tipo_de_regra] 'is
 	
 	deconstruct Ordem
 		N [number] 'from _ [number]
@@ -478,142 +478,20 @@ end function
 
 function traduzTipoDeRegra TipoDeRegra [tipo_de_regra]
 	replace [repeat qqtoken]
-		Tipo [repeat qqtoken]
+		_ [repeat qqtoken]
+	
+	deconstruct TipoDeRegra
+		Plica [plica] NomeDaRegra [id]
 	
 	by
-		Tipo [traduzTipoDeRegra1 TipoDeRegra]
-			 [traduzTipoDeRegra2 TipoDeRegra]
-			 [traduzTipoDeRegra3 TipoDeRegra]
-			 [traduzTipoDeRegra4 TipoDeRegra]
-			 [traduzTipoDeRegra5 TipoDeRegra]
-			 [traduzTipoDeRegra6 TipoDeRegra]
-			 [traduzTipoDeRegra7 TipoDeRegra]
-			 [traduzTipoDeRegra8 TipoDeRegra]
-			 
+		_ [p $] [p \rl{ ] [p NomeDaRegra] [p }] [p $]
 end function
 
-function traduzTipoDeRegra1 TipoDeRegra [tipo_de_regra]
-	replace [repeat qqtoken]
-		Tipo [repeat qqtoken]
-	
-	deconstruct * TipoDeRegra
-		'init
-	
+function ExcluirPrimeiroDaSequencia
+	replace * [repeat id]
+		Id [id] Sequencia [repeat id]
 	by
-		
-end function
-
-function traduzTipoDeRegra2 TipoDeRegra [tipo_de_regra]
-	replace [repeat qqtoken]
-		Tipo [repeat qqtoken]
-	
-	deconstruct * TipoDeRegra
-		'and- Id [id]
-	
-	construct TipoTraduzido [repeat qqtoken]
-		$\dland$-
-	
-	construct TipoTraduzidoComId [repeat qqtoken]
-		TipoTraduzido[p Id]
-	
-	by
-		 _ [p $] [p \rl{ ] [p TipoTraduzidoComId] [p }] [p $]
-end function
-
-function traduzTipoDeRegra3 TipoDeRegra [tipo_de_regra]
-	replace [repeat qqtoken]
-		Tipo [repeat qqtoken]
-	
-	deconstruct * TipoDeRegra
-		'exist- Id [id]
-	
-	construct TipoTraduzido [repeat qqtoken]
-		$\exists$-
-	
-	construct TipoTraduzidoComId [repeat qqtoken]
-		TipoTraduzido [p Id]
-	
-	by
-		 _ [p $] [p \rl{ ] [p TipoTraduzidoComId] [p }] [p $]
-end function
-
-function traduzTipoDeRegra4 TipoDeRegra [tipo_de_regra]
-	replace [repeat qqtoken]
-		Tipo [repeat qqtoken]
-	
-	deconstruct * TipoDeRegra
-		'forall- Id [id]
-	
-	construct TipoTraduzido [repeat qqtoken]
-		$\forall$-
-	
-	construct TipoTraduzidoComId [repeat qqtoken]
-		TipoTraduzido[p Id]
-	
-	by
-		 _ [p $] [p \rl{ ] [p TipoTraduzidoComId] [p }] [p $]
-end function
-
-function traduzTipoDeRegra5 TipoDeRegra [tipo_de_regra]
-	replace [repeat qqtoken]
-		Tipo [repeat qqtoken]
-	
-	deconstruct * TipoDeRegra
-		'weak- Id [id]
-	
-	construct TipoTraduzido [repeat qqtoken]
-		weak-	
-	
-	construct TipoTraduzidoComId [repeat qqtoken]
-		TipoTraduzido[p Id]
-	
-	by
-		_ [p $] [p \rl{ ] [p TipoTraduzidoComId] [p }] [p $]
-end function
-
-function traduzTipoDeRegra6 TipoDeRegra [tipo_de_regra]
-	replace [repeat qqtoken]
-		Tipo [repeat qqtoken]
-	
-	deconstruct * TipoDeRegra
-		'neg- Id [id]
-	
-	construct TipoTraduzido [repeat qqtoken]
-		$\neg$-
-	
-	construct TipoTraduzidoComId [repeat qqtoken]
-		TipoTraduzido[p Id]
-	
-	by
-		_ [p $] [p \rl{ ] [p TipoTraduzidoComId] [p }] [p $]
-end function
-
-function traduzTipoDeRegra7 TipoDeRegra [tipo_de_regra]
-	replace [repeat qqtoken]
-		Tipo [repeat qqtoken]
-	
-	deconstruct * TipoDeRegra
-		'prom-exist
-	
-	construct TipoTraduzido [repeat qqtoken]
-		prom-exist
-	
-	by
-		 _ [p $] [p \rl{ ] [p TipoTraduzido] [p }] [p $]
-end function
-
-function traduzTipoDeRegra8 TipoDeRegra [tipo_de_regra]
-	replace [repeat qqtoken]
-		Tipo [repeat qqtoken]
-	
-	deconstruct * TipoDeRegra
-		'prom-all-esp
-	
-	construct TipoTraduzido [repeat qqtoken]
-		prom-$\forall$-esp
-	
-	by
-		 _ [p $] [p \rl{ ] [p TipoTraduzido] [p }] [p $]
+		Sequencia
 end function
 
 function obterSequenciaDeComandos NumeroDaVez [number] TabelaDeOrdens [repeat ordem]

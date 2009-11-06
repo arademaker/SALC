@@ -46,7 +46,10 @@ fmod LALC-SYNTAX is
  inc LABEL .
  inc LIST{Label} .
 
- op s : Label List{Label} -> Label .
+ sort SLabel .
+ subsort SLabel < Label .
+
+ op s : Label List{Label} -> SLabel .
 
  vars L1 L2 L : List{Label} .
  vars R S : Role .
@@ -98,6 +101,9 @@ endv
 fmod LALCQI-SYNTAX is 
  inc LALC-SYNTAX .
 
- ops gt lt : Nat Label -> Label .
+ sort QLabel .
+ subsort QLabel < Label .
+
+ ops gt lt : Nat Label -> QLabel .
 
 endfm
