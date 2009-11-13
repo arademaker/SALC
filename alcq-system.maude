@@ -26,6 +26,17 @@ mod LALCQ-SYSTEM is
    [ X from Y by Q is ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA ] goals((X, XS))  => 
    [ X from Y by Q is ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA ] goals((XS))  .
 
+ crl [initial] : 
+   [ X from Y by Q is ALFA, < L1 | A | L2 lt(n,R) > |- < L1 | A | L2 lt(m,R) >, GAMMA ] goals((X, XS))  => 
+   [ X from Y by Q is ALFA, < L1 | A | L2 lt(n,R) > |- < L2 | A | L2 lt(m,R) >, GAMMA ] goals((XS)) 
+  if n <= m .
+
+ crl [initial] : 
+   [ X from Y by Q is ALFA, < L1 | A | L2 gt(n,R) > |- < L1 | A | L2 gt(m,R) >, GAMMA ] goals((X, XS))  => 
+   [ X from Y by Q is ALFA, < L1 | A | L2 gt(n,R) > |- < L2 | A | L2 gt(m,R) >, GAMMA ] goals((XS)) 
+  if m <= n .
+
+
  rl [weak-l] : 
   [ X from Y by Q is      ALFA, E |- GAMMA ] next(N) goals((X, XS)) => 
   [ X from Y by Q is      ALFA, E |- GAMMA ] next(N + 1) goals((XS, N)) 
@@ -52,14 +63,14 @@ mod LALCQ-SYSTEM is
    [ X from Y by Q is    ALFA, < L1 | ~ A | L2 >  |- GAMMA ] next(N + 1) goals((XS, N))
    [ N from X by 'neg-l is ALFA |- GAMMA, < L3 | A | L4 > ] 
   if [L3, L4] := neg(L1, L2) /\ 
-     not has-quant(L1) /\ not has-quant(L2) .
+     not has-quant(L1 L2) .
 
  crl [neg-r] : 
    [ X from Y by Q is    ALFA |- GAMMA, < L1 | ~ A | L2 > ] next(N) goals((X, XS)) => 
    [ X from Y by Q is    ALFA |- GAMMA, < L1 | ~ A | L2 > ] next(N + 1) goals((XS, N))
    [ N from X by 'neg-r is ALFA, < L3 | A | L4 > |- GAMMA ] 
   if [L3, L4] := neg(L1, L2) /\
-     not has-quant(L1) /\ not has-quant(L2) .
+     not has-quant(L1 L2) .
 
  rl [least-l] : 
    [ X from Y by Q is  ALFA, < L1 | AT-LEAST(M, R, A) | L2 > |- GAMMA ] next(N) goals((X, XS)) => 

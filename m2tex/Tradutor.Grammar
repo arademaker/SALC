@@ -53,7 +53,8 @@ define informacao
 end define
 
 define conteudo
-	'< [formula] '| [formula] '| [formula] '>
+	'< [formula] '| [formula] '| [formula] '> |
+	'empty
 end define
 
 define ordem 
