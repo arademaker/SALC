@@ -1,5 +1,137 @@
 
-in sequent-calculus.maude
+
+fmod SYNTAX is 
+ inc NAT .
+
+ sorts AConcept Concept ARole Role .
+ subsort AConcept < Concept .
+ subsort ARole < Role .
+
+ ops ALL EXIST : Role Concept -> Concept .
+ ops CTRUE CFALSE : -> AConcept .
+ op _&_ : Concept Concept -> Concept [gather (e E) prec 31] .
+ op _|_ : Concept Concept -> Concept [gather (e E) prec 32] .
+ op ~_  : Concept -> Concept [prec 30] .
+
+ eq ~ CTRUE = CFALSE .
+ eq ~ CFALSE = CTRUE .
+
+ ops AT-MOST AT-LEAST : Nat Role Concept -> Concept .
+ op INV : Role -> Role .
+
+ var R : Role .
+ var C : Concept .
+
+ --- eq AT-LEAST(1, R, C) = EXIST(R, C) .
+endfm
+
+
+fmod LABEL is 
+ inc SYNTAX .
+
+ sort Label .
+ subsort Role < Label .
+endfm
+
+
+view Label from TRIV to LABEL is 
+ sort Elt to Label .
+endv
+
+
+fmod LALC-SYNTAX is 
+ inc LABEL .
+ inc LIST{Label} .
+
+ sort SLabel .
+ subsort SLabel < Label .
+
+ op s : Label List{Label} -> SLabel .
+
+ vars L1 L2 L : List{Label} .
+ vars R S : Role .
+ vars C : Concept .
+
+ eq s(R, nil) = R .
+
+ sorts Expression LConcept FzConcept .
+ subsorts LConcept FzConcept < Expression .
+
+ op <_|_|_> : List{Label} Concept List{Label} -> LConcept [ctor] . 
+ 
+ op [_,_] : Nat LConcept -> FzConcept .
+
+ 
+ sort LabelTuple .
+
+ op [_,_] : List{Label} List{Label} -> LabelTuple [ctor] .
+
+ op join   : List{Label} List{Label} Concept -> Concept .
+ op invert : Concept -> Concept .
+ op split  : List{Label} List{Label} Concept -> LabelTuple .
+ op neg : List{Label} List{Label} -> LabelTuple .
+ 
+ eq neg(L1, L2) = split(nil, nil, invert(join(L1, L2, CTRUE))) .
+
+ eq join(L1,  s(R,L1) L2, C)   = join(L1, L2, EXIST(R,C)) .  
+ eq join(nil, R L2, C)   = join(nil, L2, EXIST(R,C)) . 
+ 
+ eq join(L1 R, L2, C) = join(L1, L2, ALL(R,C)) [owise] . 
+ eq join(nil, nil, C) = C .
+ 
+ eq invert(ALL(R, C))   = EXIST(R, invert(C)) .
+ eq invert(EXIST(R, C)) = ALL(R, invert(C)) .
+ eq invert(C) = C [owise] .
+ 
+ eq split(L1, L2, ALL(R,C))   = split(L1 R, L2, C) .
+ eq split(L1, L2, EXIST(R,C)) = split(L1, s(R,L1) L2, C) .
+ eq split(L1, L2, C) = [L1, L2] [owise] .
+ 
+endfm
+
+
+view Expression from TRIV to LALC-SYNTAX is 
+ sort Elt to Expression .
+endv
+
+
+fmod LALCQI-SYNTAX is 
+ inc LALC-SYNTAX .
+
+ sort QLabel .
+ subsort QLabel < Label .
+
+ ops gt lt : Nat Label -> QLabel .
+
+endfm
+
+
+fmod SEQUENT-CALCULUS is
+ inc LALC-SYNTAX .
+ inc SET{Expression} .
+ inc SET{Label} .
+ inc SET{Nat} .
+ inc NAT . 
+ inc QID .
+
+ sort Sequent .
+
+ sorts Goal State Proof .
+ subsort Goal State < Proof .
+
+ op next  : Nat -> State .
+ op goals : Set{Nat} -> State .
+
+ op [_from_by_is_] : Nat Nat Qid Sequent -> Goal [format (n d d d d d d d d d)] .
+ op nil : -> Proof [ctor] .
+ op __ : Proof Proof -> Proof [ctor comm assoc] .
+
+ op _|-_ : Set{Expression} Set{Expression} -> Sequent [ctor prec 122 gather(e e)] .
+ op _:_|-_:_ : Set{Expression} Set{Expression} Set{Expression} Set{Expression} -> Sequent [ctor prec 122 gather(e e e e)] .
+ 
+endfm 
+
+
 
 mod LALCQ-SYSTEM is 
  inc SEQUENT-CALCULUS .

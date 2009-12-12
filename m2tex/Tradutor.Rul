@@ -484,7 +484,7 @@ function traduzTipoDeRegra TipoDeRegra [tipo_de_regra]
 		Plica [plica] NomeDaRegra [id]
 	
 	by
-		_ [p $] [p \rl{ ] [p NomeDaRegra] [p }] [p $]
+		_ [p $] [p \rl{ ] [p NomeDaRegra] [p }]
 end function
 
 function ExcluirPrimeiroDaSequencia
