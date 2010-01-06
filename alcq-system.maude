@@ -29,8 +29,12 @@ endfm
 fmod LABEL is 
  inc SYNTAX .
 
- sort Label .
- subsort Role < Label .
+ sorts Label ELabel ALabel QLabel .
+ subsorts ELabel ALabel QLabel < Label .
+
+ ops gt lt : Nat Role -> QLabel .
+ op ex : Role -> ELabel .
+ op al : Role -> ALabel .
 endfm
 
 
@@ -43,49 +47,80 @@ fmod LALC-SYNTAX is
  inc LABEL .
  inc LIST{Label} .
 
- sort SLabel .
- subsort SLabel < Label .
-
- op s : Label List{Label} -> SLabel .
-
  vars L1 L2 L : List{Label} .
  vars R S : Role .
- vars C : Concept .
-
- eq s(R, nil) = R .
+ var C : Concept .
+ var T : Label .
+ var n : Nat .
 
  sorts Expression LConcept FzConcept .
  subsorts LConcept FzConcept < Expression .
 
- op <_|_|_> : List{Label} Concept List{Label} -> LConcept [ctor] . 
+ op <_|_> : List{Label} Concept -> LConcept [ctor] . 
  
  op [_,_] : Nat LConcept -> FzConcept .
 
- 
- sort LabelTuple .
 
- op [_,_] : List{Label} List{Label} -> LabelTuple [ctor] .
+ --- that is what I actually need to implement
+ --- op occurs : Sort List{Label} -> Bool .
 
- op join   : List{Label} List{Label} Concept -> Concept .
- op invert : Concept -> Concept .
- op split  : List{Label} List{Label} Concept -> LabelTuple .
- op neg : List{Label} List{Label} -> LabelTuple .
- 
- eq neg(L1, L2) = split(nil, nil, invert(join(L1, L2, CTRUE))) .
+ ops has-quant has-lt has-gt : List{Label} -> Bool .
+ ops has-al has-ex : List{Label} -> Bool .
 
- eq join(L1,  s(R,L1) L2, C)   = join(L1, L2, EXIST(R,C)) .  
- eq join(nil, R L2, C)   = join(nil, L2, EXIST(R,C)) . 
+ ceq has-quant(T L) = true if (T :: QLabel) .
+ eq  has-quant(T L) = has-quant(L) [owise] .
+ eq  has-quant(nil) = false .
+
+ ceq has-lt(T L) = true if (T :: QLabel) /\ lt(n, R) := T .
+ eq  has-lt(T L) = has-lt(L) [owise] .
+ eq  has-lt(nil) = false .
+
+ ceq has-gt(T L) = true if (T :: QLabel) /\ gt(n, R) := T .
+ eq  has-gt(T L) = has-gt(L) [owise] .
+ eq  has-gt(nil) = false .
+
+ ceq has-ex(T L) = true if (T :: ELabel) .
+ eq  has-ex(T L) = has-ex(L) [owise] .
+ eq  has-ex(nil) = false .
+
+ ceq has-al(T L) = true if (T :: ALabel) .
+ eq  has-al(T L) = has-al(L) [owise] .
+ eq  has-al(nil) = false .
+
+
+ op neg : List{Label} -> List{Label} .
+ op neg-aux : List{Label} List{Label} -> List{Label} .
+
+ eq neg(L1) = neg-aux(L1, nil) .
+
+ eq neg-aux(L1 al(R), L2) = neg-aux(L1, ex(R) L2) .
+ eq neg-aux(L1 ex(R), L2) = neg-aux(L1, al(R) L2) .
+ eq neg-aux(nil, L2) = L2 .
+
+---  sort LabelTuple .
+
+---  op [_,_] : List{Label} List{Label} -> LabelTuple [ctor] .
+
+---  op join   : List{Label} List{Label} Concept -> Concept .
+---  op invert : Concept -> Concept .
+---  op split  : List{Label} List{Label} Concept -> LabelTuple .
+---  op neg : List{Label} List{Label} -> LabelTuple .
  
- eq join(L1 R, L2, C) = join(L1, L2, ALL(R,C)) [owise] . 
- eq join(nil, nil, C) = C .
+---  eq neg(L1, L2) = split(nil, nil, invert(join(L1, L2, CTRUE))) .
+
+---  eq join(L1,  s(R,L1) L2, C)   = join(L1, L2, EXIST(R,C)) .  
+---  eq join(nil, R L2, C)   = join(nil, L2, EXIST(R,C)) . 
  
- eq invert(ALL(R, C))   = EXIST(R, invert(C)) .
- eq invert(EXIST(R, C)) = ALL(R, invert(C)) .
- eq invert(C) = C [owise] .
+---  eq join(L1 R, L2, C) = join(L1, L2, ALL(R,C)) [owise] . 
+---  eq join(nil, nil, C) = C .
  
- eq split(L1, L2, ALL(R,C))   = split(L1 R, L2, C) .
- eq split(L1, L2, EXIST(R,C)) = split(L1, s(R,L1) L2, C) .
- eq split(L1, L2, C) = [L1, L2] [owise] .
+---  eq invert(ALL(R, C))   = EXIST(R, invert(C)) .
+---  eq invert(EXIST(R, C)) = ALL(R, invert(C)) .
+---  eq invert(C) = C [owise] .
+ 
+---  eq split(L1, L2, ALL(R,C))   = split(L1 R, L2, C) .
+---  eq split(L1, L2, EXIST(R,C)) = split(L1, s(R,L1) L2, C) .
+---  eq split(L1, L2, C) = [L1, L2] [owise] .
  
 endfm
 
@@ -93,17 +128,6 @@ endfm
 view Expression from TRIV to LALC-SYNTAX is 
  sort Elt to Expression .
 endv
-
-
-fmod LALCQI-SYNTAX is 
- inc LALC-SYNTAX .
-
- sort QLabel .
- subsort QLabel < Label .
-
- ops gt lt : Nat Label -> QLabel .
-
-endfm
 
 
 fmod SEQUENT-CALCULUS is
@@ -135,7 +159,6 @@ endfm
 
 mod LALCQ-SYSTEM is 
  inc SEQUENT-CALCULUS .
- inc LALCQI-SYNTAX .
  inc INT .
 
  vars ALFA GAMMA : Set{Expression} .
@@ -155,17 +178,17 @@ mod LALCQ-SYSTEM is
  --- 4. new provisos in ALC system rules. Note that we moved R_n and R^n for the right list!! 
 
  rl [initial] : 
-   [ X from Y by Q is ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA ] goals((X, XS))  => 
-   [ X from Y by Q is ALFA, < nil | AT | nil > |- < nil | AT | nil >, GAMMA ] goals((XS))  .
+   [ X from Y by Q is ALFA, < nil | AT > |- < nil | AT >, GAMMA ] goals((X, XS))  => 
+   [ X from Y by Q is ALFA, < nil | AT > |- < nil | AT >, GAMMA ] goals((XS))  .
 
  crl [initial] : 
-   [ X from Y by Q is ALFA, < L1 | A | L2 lt(n,R) > |- < L1 | A | L2 lt(m,R) >, GAMMA ] goals((X, XS))  => 
-   [ X from Y by Q is ALFA, < L1 | A | L2 lt(n,R) > |- < L2 | A | L2 lt(m,R) >, GAMMA ] goals((XS)) 
+   [ X from Y by Q is ALFA, < lt(n,R) L | A > |- < lt(m,R) L | A  >, GAMMA ] goals((X, XS))  => 
+   [ X from Y by Q is ALFA, < lt(n,R) L | A > |- < lt(m,R) L | A  >, GAMMA ] goals((XS)) 
   if n <= m .
 
  crl [initial] : 
-   [ X from Y by Q is ALFA, < L1 | A | L2 gt(n,R) > |- < L1 | A | L2 gt(m,R) >, GAMMA ] goals((X, XS))  => 
-   [ X from Y by Q is ALFA, < L1 | A | L2 gt(n,R) > |- < L2 | A | L2 gt(m,R) >, GAMMA ] goals((XS)) 
+   [ X from Y by Q is ALFA, < gt(n,R) L | A > |- < gt(m,R) L | A >, GAMMA ] goals((X, XS))  => 
+   [ X from Y by Q is ALFA, < gt(n,R) L | A > |- < gt(m,R) L | A >, GAMMA ] goals((XS)) 
   if m <= n .
 
 
@@ -178,97 +201,169 @@ mod LALCQ-SYSTEM is
   [ X from Y by Q is      ALFA |- GAMMA, E ] next(N) goals((X, XS)) => 
   [ X from Y by Q is      ALFA |- GAMMA, E ] next(N + 1) goals((XS, N)) 
   [ N from X by 'weak-r is ALFA |- GAMMA ] .
-  
 
- op has-quant : List{Label} -> Bool .
 
- var T : Label .
+ rl [forall-r] : 
+   [ X from Y by Q is    ALFA |- GAMMA, < L1 | ALL(R, A) > ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is    ALFA |- GAMMA, < L1 | ALL(R, A) > ] next(N + 1) goals((XS, N))
+   [ N from X by 'forall-r is   ALFA |- GAMMA, < L1 al(R) | A > ] .
 
- ceq has-quant(T L) = true 
-  if (T :: QLabel) .
+ rl [forall-l] : 
+   [ X from Y by Q is    ALFA, < L1 | ALL(R, A) > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is    ALFA, < L1 | ALL(R, A) > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'forall-l is  ALFA, < L1 al(R) | A > |- GAMMA ] .
 
- eq has-quant(T L) = has-quant(L) [owise] .
- eq has-quant(nil) = false .
+ rl [exist-r] : 
+   [ X from Y by Q is    ALFA |- GAMMA, < L1 | EXIST(R, A) > ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is    ALFA |- GAMMA, < L1 | EXIST(R, A) > ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'exist-r is ALFA |- GAMMA, < L1 ex(R) | A > ] .
 
- crl [neg-l] : 
-   [ X from Y by Q is    ALFA, < L1 | ~ A | L2 >  |- GAMMA ] next(N)  goals((X, XS)) => 
-   [ X from Y by Q is    ALFA, < L1 | ~ A | L2 >  |- GAMMA ] next(N + 1) goals((XS, N))
-   [ N from X by 'neg-l is ALFA |- GAMMA, < L3 | A | L4 > ] 
-  if [L3, L4] := neg(L1, L2) /\ 
-     not has-quant(L1 L2) .
+ rl [exist-l] : 
+   [ X from Y by Q is    ALFA, < L1 | EXIST(R, A) > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is    ALFA, < L1 | EXIST(R, A) > |- GAMMA ] next(N + 1) goals((XS, N))
+   [ N from X by 'exist-l is   ALFA, < L1 ex(R) | A > |- GAMMA ] .
 
- crl [neg-r] : 
-   [ X from Y by Q is    ALFA |- GAMMA, < L1 | ~ A | L2 > ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is    ALFA |- GAMMA, < L1 | ~ A | L2 > ] next(N + 1) goals((XS, N))
-   [ N from X by 'neg-r is ALFA, < L3 | A | L4 > |- GAMMA ] 
-  if [L3, L4] := neg(L1, L2) /\
-     not has-quant(L1 L2) .
 
  rl [least-l] : 
-   [ X from Y by Q is  ALFA, < L1 | AT-LEAST(M, R, A) | L2 > |- GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA, < L1 | AT-LEAST(M, R, A) | L2 > |- GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'least-l is  ALFA, < L1 | A | gt(M,R) L2 > |- GAMMA ] .
+   [ X from Y by Q is  ALFA, < L1 | AT-LEAST(M, R, A) > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | AT-LEAST(M, R, A) > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'least-l is  ALFA, < L1 gt(M,R) | A > |- GAMMA ] .
 
  rl [least-r] : 
-   [ X from Y by Q is  ALFA |- < L1 | AT-LEAST(M, R, A) | L2 >, GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA |- < L1 | AT-LEAST(M, R, A) | L2 >, GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'least-r is  ALFA |- < L1 | A | gt(M,R) L2 >, GAMMA ] .
+   [ X from Y by Q is  ALFA |- < L1 | AT-LEAST(M, R, A) >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < L1 | AT-LEAST(M, R, A) >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'least-r is  ALFA |- < L1 gt(M,R) | A >, GAMMA ] .
 
  rl [most-l] : 
-   [ X from Y by Q is  ALFA, < L1 | AT-MOST(M, R, A) | L2 > |- GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA, < L1 | AT-MOST(M, R, A) | L2 > |- GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'most-l is  ALFA, < L1 | A | lt(M,R) L2 > |- GAMMA ] .
+   [ X from Y by Q is  ALFA, < L1 | AT-MOST(M, R, A) > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | AT-MOST(M, R, A) > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'most-l is  ALFA, < L1 lt(M,R) | A > |- GAMMA ] .
 
  rl [most-r] : 
-   [ X from Y by Q is  ALFA |- < L1 | AT-MOST(M, R, A) | L2 >, GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA |- < L1 | AT-MOST(M, R, A) | L2 >, GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'most-r is  ALFA |- < L1 | A | lt(M,R) L2 >, GAMMA ] .
+   [ X from Y by Q is  ALFA |- < L1 | AT-MOST(M, R, A) >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < L1 | AT-MOST(M, R, A) >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'most-r is  ALFA |- < L1 lt(M,R) | A >, GAMMA ] .
 
 
- rl [quant-exist-l] : 
-   [ X from Y by Q is  ALFA, < L1 | A | L2 R > |- GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA, < L1 | A | L2 R > |- GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'quant-exist-l is  ALFA, < L1 | A | L2 gt(1,R) > |- GAMMA ] .
 
- rl [exist-quant-r] : 
-   [ X from Y by Q is  ALFA |- < L1 | A | L2 gt(1,R) >, GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA |- < L1 | A | L2 gt(1,R) >, GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'exist-quant-r is  ALFA |- < L1 | A | L2 R >, GAMMA ] .
+ crl [neg-l] : 
+   [ X from Y by Q is  ALFA, < L1 | ~ A >  |- GAMMA ] next(N)  goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < L1 | ~ A >  |- GAMMA ] next(N + 1) goals((XS, N))
+   [ N from X by 'neg-l is ALFA |- GAMMA, < neg(L1) | A > ] 
+  if not has-quant(L1) .
 
- --- where g(1,R) in the two rules below could be g(n,R) for n >= 1
-
- rl [quant-exist-r] : 
-   [ X from Y by Q is  ALFA |- < L1 | A | L2 R >, GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA |- < L1 | A | L2 R >, GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'quant-exist-r is  ALFA |- < L1 | A | L2 gt(1,R) >, GAMMA ] .
-
- rl [exist-quant-l] : 
-   [ X from Y by Q is  ALFA, < L1 | A | L2 gt(1,R) > |- GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA, < L1 | A | L2 gt(1,R) > |- GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'exist-quant-l is  ALFA, < L1 | A | L2 R > |- GAMMA ] .
+ crl [neg-r] : 
+   [ X from Y by Q is    ALFA |- GAMMA, < L1 | ~ A > ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is    ALFA |- GAMMA, < L1 | ~ A > ] next(N + 1) goals((XS, N))
+   [ N from X by 'neg-r is ALFA, < neg(L1) | A > |- GAMMA ] 
+  if not has-quant(L1) .
 
  vars m n : Nat .
 
+ rl [quant-exist-l] : 
+   [ X from Y by Q is  ALFA, < ex(R) L1 | A > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < ex(R) L1 | A > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-exist-l is  ALFA, < gt(1,R) L1 | A > |- GAMMA ] .
+
+ --- or gt(n,R) where n >= 1
+ rl [quant-exist-r] : 
+   [ X from Y by Q is  ALFA |- < ex(R) L1 | A >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < ex(R) L1 | A >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-exist-r is  ALFA |- < gt(1,R) L1 | A >, GAMMA ] .
+
+ crl [exist-quant-l] : 
+   [ X from Y by Q is  ALFA, < gt(n,R) L1 | A > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < gt(n,R) L1 | A > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'exist-quant-l is  ALFA, < ex(R) L1 | A > |- GAMMA ] 
+  if n >= 1 .
+
+ rl [exist-quant-r] : 
+   [ X from Y by Q is  ALFA |- < gt(1,R) L1 | A >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < gt(1,R) L1 | A >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'exist-quant-r is  ALFA |- < ex(R) L1 | A >, GAMMA ] .
+
+
  crl [quant-gt-l] : 
-   [ X from Y by Q is  ALFA, < L1 | A | L2 gt(m,R) > |- GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA, < L1 | A | L2 gt(m,R) > |- GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'quant-qt-r is  ALFA, < L1 | A | L2 gt((m - 1), R) > |- GAMMA ] 
+   [ X from Y by Q is  ALFA, < gt(m,R) L1 | A > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < gt(m,R) L1 | A > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-qt-r is  ALFA, < gt((m - 1), R) L1 | A > |- GAMMA ] 
   if m > 1 .
 
  rl [quant-gt-r] : 
-   [ X from Y by Q is  ALFA |- < L1 | A | L2 gt(m,R) >, GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA |- < L1 | A | L2 gt(m,R) >, GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'quant-qt-r is  ALFA |- < L1 | A | L2 gt((m + 1), R) >, GAMMA ] .
+   [ X from Y by Q is  ALFA |- < gt(m,R) L1 | A >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < gt(m,R) L1 | A >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-qt-r is  ALFA |- < gt((m + 1), R) L1 | A >, GAMMA ] .
+
 
  rl [quant-lt-l] : 
-   [ X from Y by Q is  ALFA, < L1 | A | L2 lt(m,R) > |- GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA, < L1 | A | L2 lt(m,R) > |- GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'quant-lt-r is  ALFA, < L1 | A | L2 gt((m + 1), R) > |- GAMMA ] .
+   [ X from Y by Q is  ALFA, < lt(m,R) L1 | A > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA, < lt(m,R) L1 | A > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-lt-r is  ALFA, < lt((m + 1), R) L1 | A > |- GAMMA ] .
 
  crl [quant-lt-r] : 
-   [ X from Y by Q is  ALFA |- < L1 | A | L2 lt(m,R) >, GAMMA ] next(N) goals((X, XS)) => 
-   [ X from Y by Q is  ALFA |- < L1 | A | L2 lt(m,R) >, GAMMA ] next(N + 1) goals((XS, N)) 
-   [ N from X by 'quant-lt-r is  ALFA |- < L1 | A | L2 lt((m - 1), R) >, GAMMA ] 
+   [ X from Y by Q is  ALFA |- < lt(m,R) L1 | A >, GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is  ALFA |- < lt(m,R) L1 | A >, GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'quant-lt-r is  ALFA |- < lt((m - 1), R) L1 | A >, GAMMA ] 
   if m > 1 .
+
+
+ crl [and-r] : 
+   [ X     from Y by Q is ALFA |- GAMMA, < L | A & B > ] next(N) goals((X, XS)) => 
+   [ X     from Y by Q is ALFA |- GAMMA, < L | A & B > ] next(N + 2) goals((XS, N, N + 1))  
+   [ N     from X by 'and-r is ALFA |- GAMMA, < L | A > ] 
+   [ N + 1 from X by 'and-r is ALFA |- GAMMA, < L | B > ] 
+  if not has-ex(L) /\ not has-gt(L) .
+
+ crl [and-l] : 
+   [ X from Y by Q is      ALFA, < L | A & B > |- GAMMA ] next(N) goals((X, XS)) => 
+   [ X from Y by Q is      ALFA, < L | A & B > |- GAMMA ] next(N + 1) goals((XS, N)) 
+   [ N from X by 'and-l is ALFA, < L | A >, < L | B > |- GAMMA ] 
+  if not has-ex(L) /\ not has-lt(L) .
+
+
+  crl [or-l] : 
+    [ X     from Y by Q is  ALFA, < L | (A | B) > |- GAMMA ] next(N) goals((X, XS)) =>
+    [ X     from Y by Q is  ALFA, < L | (A | B) > |- GAMMA ] next(N + 2) goals((XS, N, N + 1))
+    [ N     from X by 'or-l is  ALFA, < L | A > |- GAMMA ] 
+    [ N + 1 from X by 'or-l is  ALFA, < L | B > |- GAMMA ] 
+   if not has-al(L) /\ not has-gt(L) .
+
+  crl [or-r] : 
+    [ X from Y by Q is     ALFA |- GAMMA, < L | (A | B) > ] next(N) goals((X, XS)) => 
+    [ X from Y by Q is     ALFA |- GAMMA, < L | (A | B) > ] next(N + 1) goals((XS, N))
+    [ N from X by 'or-r is  ALFA |- GAMMA, < L | A >, < L | B > ] 
+   if not has-al(L) /\ not has-lt(L) .
+
+
+  op all-label    : Set{Expression} Label -> Bool .
+  op remove-label : Set{Expression} Label Set{Expression} -> Set{Expression} .
+  
+  vars ALFA' GAMMA' : Set{Expression} .
+  var LBL : Label .
+      
+  eq all-label((< LBL L | A >, GAMMA), LBL) = 
+     all-label(GAMMA, LBL) .
+   
+  eq all-label(empty, LBL) = true . 
+  eq all-label(GAMMA, LBL) = false [owise] .
+
+  eq remove-label((< LBL L | A >, GAMMA), LBL, GAMMA') = 
+     remove-label(GAMMA, LBL, (GAMMA', < L | A >)) .
+
+  eq remove-label(empty, LBL, GAMMA) = GAMMA .
+     
+  crl [prom-exist] : 
+   [ X from Y by Q is    < ex(R) L | A > |- GAMMA ] next(N)     goals((X, XS)) => 
+   [ X from Y by Q is    < ex(R) L | A > |- GAMMA ] next(N + 1) goals((XS, N))
+   [ N from X by 'prom-exist is  < L | A > |- GAMMA' ] 
+  if all-label(GAMMA, ex(R)) = true /\ 
+     GAMMA' := remove-label(GAMMA, ex(R), empty) .
+
+  crl [prom-all] : 
+   [ X from Y by Q is    ALFA |- < al(R) L1 | A > ] next(N)     goals((X, XS)) => 
+   [ X from Y by Q is    ALFA |- < al(R) L1 | A > ] next(N + 1) goals((XS, N))
+   [ N from X by 'prom-all-esp is  ALFA' |- < L1 | A >  ] 
+  if all-label(ALFA, al(R)) = true /\ 
+     ALFA' := remove-label(ALFA, al(R), empty) .
 
 endm
