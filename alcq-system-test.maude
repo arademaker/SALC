@@ -76,11 +76,6 @@ endm
 eof
 
 search [1] start(9) =>! P:Proof goals(empty) .
-search [1] start(10) =>! P:Proof goals(empty) .
-search [1] start(15) =>! P:Proof goals(empty) .
-search [1] start(16) =>! P:Proof goals(empty) .
-search [1] start(17) =>! P:Proof goals(empty) .
-search [1] start(18) =>! P:Proof goals(empty) .
 
 search start(11) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
 search start(12) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .

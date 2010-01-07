@@ -97,31 +97,6 @@ fmod LALC-SYNTAX is
  eq neg-aux(L1 ex(R), L2) = neg-aux(L1, al(R) L2) .
  eq neg-aux(nil, L2) = L2 .
 
----  sort LabelTuple .
-
----  op [_,_] : List{Label} List{Label} -> LabelTuple [ctor] .
-
----  op join   : List{Label} List{Label} Concept -> Concept .
----  op invert : Concept -> Concept .
----  op split  : List{Label} List{Label} Concept -> LabelTuple .
----  op neg : List{Label} List{Label} -> LabelTuple .
- 
----  eq neg(L1, L2) = split(nil, nil, invert(join(L1, L2, CTRUE))) .
-
----  eq join(L1,  s(R,L1) L2, C)   = join(L1, L2, EXIST(R,C)) .  
----  eq join(nil, R L2, C)   = join(nil, L2, EXIST(R,C)) . 
- 
----  eq join(L1 R, L2, C) = join(L1, L2, ALL(R,C)) [owise] . 
----  eq join(nil, nil, C) = C .
- 
----  eq invert(ALL(R, C))   = EXIST(R, invert(C)) .
----  eq invert(EXIST(R, C)) = ALL(R, invert(C)) .
----  eq invert(C) = C [owise] .
- 
----  eq split(L1, L2, ALL(R,C))   = split(L1 R, L2, C) .
----  eq split(L1, L2, EXIST(R,C)) = split(L1, s(R,L1) L2, C) .
----  eq split(L1, L2, C) = [L1, L2] [owise] .
- 
 endfm
 
 
