@@ -9,4 +9,5 @@ mod UP-DOWN-TEST is
 
 endm
 
-red upTerm(start(16)) .
+red downTerm(upTerm(start(16)), error) .
+
