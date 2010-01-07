@@ -1,0 +1,12 @@
+
+in alcq-system-test.maude
+
+mod UP-DOWN-TEST is
+ inc TEST .
+ inc META-LEVEL .
+
+ op error : -> [Proof] .
+
+endm
+
+red upTerm(start(16)) .
