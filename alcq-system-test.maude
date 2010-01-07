@@ -1,0 +1,99 @@
+
+in alcq-system.maude 
+
+mod TEST-CASES is
+ inc LALCQ-SYSTEM .
+
+  ops A B C D E : -> AConcept .
+  ops R S T U V : -> ARole .
+
+  op seq : Nat -> Sequent .
+
+  eq seq(1) = < nil | EXIST(S, ALL(R, A)) > |- < nil | EXIST(S, ALL(R, A)) > .
+  eq seq(2) = < nil | ALL(S, EXIST(R, A)) > |- < nil | ALL(S, EXIST(R, A)) > .
+  eq seq(3) = < nil | EXIST(R, CTRUE) & ALL(R, ~ EXIST(R, ~ A)) > |- < nil | EXIST(R, ALL(R, A)) > .
+  eq seq(4) = < nil | A & B > |- < nil | (A | B) > .
+  eq seq(5) = < nil | A & ALL(R, C) > |- < nil | B & ALL(S, D) > .
+
+  --- \exist R \bot \equiv \bot
+
+  eq seq(6) = < nil | EXIST(R, (A & ~ A)) > |- empty .
+  eq seq(7) = < nil | EXIST(R, (A & ~ A)) > |- < nil | (A & ~ A) > .
+  eq seq(8) = < nil | (A & ~ A) > |- < nil | EXIST(R, (A & ~ A)) > .
+
+  --- \forall R.\top \equiv \top
+
+  eq seq(9)  = < nil | ALL(R, (A | ~ A)) > |- < nil | (A | ~ A) > .
+  eq seq(10) = < nil | (A | ~ A) > |- < nil | ALL(R, (A | ~ A)) > .
+  eq seq(11) = empty |- < nil | ALL(R, (A | ~ A)) >  .
+
+  eq seq(12) = empty |- < nil | EXIST(R, (A | ~ A)) > .
+  eq seq(13) = < nil | EXIST(R, (A | ~ A)) > |- empty .
+
+  eq seq(14) = < nil | ALL(R, (A & ~ A)) > |- empty .
+  eq seq(15) = < nil | EXIST(R, (A & ~ A)) > |- empty .
+
+  op child : -> ARole .
+  op Doctor : -> AConcept .
+  eq seq(16) = < nil | EXIST(child, CTRUE) & ALL(child, ~ EXIST(child, ~ Doctor)) > |- < nil | EXIST(child, ALL(child, Doctor)) > . 
+
+
+---   eq seq(5) = < R | A & B | S > |- < R | (A | B) | S > .
+---   eq seq(6) = < S | A & B | R >, < R | A & B | S > |- < R | (A | B) | S >, < S | (A | B) | R > . 
+---   eq seq(7) = < R | A | B | S > |- < R | (A & B) | S > .
+
+
+---   eq seq(19) =  < nil | A | R >, < nil | B | R > |- < nil | C | R >, < nil | D | R > .
+---   eq seq(20) =  < nil | A | R >, < nil | B | R > |- < nil | C | R >, < nil | D | S > .
+---   eq seq(21) =  < nil | A | S >, < nil | B | R > |- < nil | C | R >, < nil | D | R > .
+
+---   eq seq(22) =  < R | A | nil >, < R | B | nil > |- < R | C | nil >, < R | D | nil > .
+---   eq seq(23) =  < R | A | nil >, < R | B | nil > |- < R | C | nil >, < S | D | nil > .
+---   eq seq(24) =  < R | A | nil >, < S | B | nil > |- < R | C | nil >, < R | D | nil > .
+
+---   eq seq(25) =  < nil | A & ~ A | R >, < nil | B | R > |- < nil | C | R > .
+---   eq seq(26) =  < nil | A & ~ A | R >, < nil | B | R > |- < nil | C | S > .
+
+---   eq seq(27) =  < R | C | nil > |- < R | A | ~ A | nil >, < R | B | nil > .
+---   eq seq(28) =  < S | C | nil > |- < R | A | ~ A | nil >, < R | B | nil > .
+ 
+endm
+
+
+
+mod TEST is 
+ inc TEST-CASES .
+
+ op start : Nat -> Goal . 
+
+ vars ALFA GAMMA : Set{Expression} .
+
+ ceq start(N:Nat) = [ 0 from 0 by 'init is ALFA |- GAMMA ] next(1) goals(0) 
+  if ALFA |- GAMMA := seq(N:Nat) .
+  
+endm
+
+eof
+
+search [1] start(9) =>! P:Proof goals(empty) .
+search [1] start(10) =>! P:Proof goals(empty) .
+search [1] start(15) =>! P:Proof goals(empty) .
+search [1] start(16) =>! P:Proof goals(empty) .
+search [1] start(17) =>! P:Proof goals(empty) .
+search [1] start(18) =>! P:Proof goals(empty) .
+
+search start(11) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+search start(12) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+search start(13) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+search start(14) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+
+search [1] start(11) =>! P:Proof goals(empty) .
+search [1] start(12) =>! P:Proof goals(empty) .
+search [1] start(13) =>! P:Proof goals(empty) .
+search [1] start(14) =>! P:Proof goals(empty) .
+
+search start(9) =>! P:Proof goals(empty) such that [1, 'and-l] in get-rules(P:Proof, empty) /\ 
+                                                   [2, 'exist-l] in get-rules(P:Proof, empty) /\ 
+                                                   [3, 'forall-l] in get-rules(P:Proof, empty) /\ 
+                                                   [4, 'exist-r] in get-rules(P:Proof, empty) /\ 
+                                                   [5, 'forall-r] in get-rules(P:Proof, empty) .
