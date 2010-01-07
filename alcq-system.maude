@@ -360,10 +360,25 @@ mod LALCQ-SYSTEM is
      GAMMA' := remove-label(GAMMA, ex(R), empty) .
 
   crl [prom-all] : 
-   [ X from Y by Q is    ALFA |- < al(R) L1 | A > ] next(N)     goals((X, XS)) => 
-   [ X from Y by Q is    ALFA |- < al(R) L1 | A > ] next(N + 1) goals((XS, N))
-   [ N from X by 'prom-all-esp is  ALFA' |- < L1 | A >  ] 
+   [ X from Y by Q is    ALFA |- < al(R) L | A > ] next(N)     goals((X, XS)) => 
+   [ X from Y by Q is    ALFA |- < al(R) L | A > ] next(N + 1) goals((XS, N))
+   [ N from X by 'prom-all is  ALFA' |- < L | A >  ] 
   if all-label(ALFA, al(R)) = true /\ 
      ALFA' := remove-label(ALFA, al(R), empty) .
+
+
+  crl [prom-gt-l] : 
+   [ X from Y by Q is    < gt(n,R) L | A > |- GAMMA ] next(N)     goals((X, XS)) => 
+   [ X from Y by Q is    < gt(n,R) L | A > |- GAMMA ] next(N + 1) goals((XS, N))
+   [ N from X by 'prom-gt-l is  < L | A > |- GAMMA' ] 
+  if all-label(GAMMA, gt(n,R)) = true /\ 
+     GAMMA' := remove-label(GAMMA, gt(n,R), empty) .
+
+  crl [prom-gt-r] : 
+   [ X from Y by Q is    ALFA |- < gt(n,R) L | A > ] next(N)     goals((X, XS)) => 
+   [ X from Y by Q is    ALFA |- < gt(n,R) L | A > ] next(N + 1) goals((XS, N))
+   [ N from X by 'prom-gt-r is  ALFA' |- < L | A >  ] 
+  if all-label(ALFA, gt(n,R)) = true /\ 
+     ALFA' := remove-label(ALFA, gt(n,R), empty) .
 
 endm
