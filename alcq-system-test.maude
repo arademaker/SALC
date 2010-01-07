@@ -76,16 +76,7 @@ endm
 eof
 
 search [1] start(9) =>! P:Proof goals(empty) .
-
-search start(11) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
-search start(12) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
-search start(13) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
-search start(14) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
-
-search [1] start(11) =>! P:Proof goals(empty) .
-search [1] start(12) =>! P:Proof goals(empty) .
-search [1] start(13) =>! P:Proof goals(empty) .
-search [1] start(14) =>! P:Proof goals(empty) .
+search [1] start(9) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
 
 search start(9) =>! P:Proof goals(empty) such that [1, 'and-l] in get-rules(P:Proof, empty) /\ 
                                                    [2, 'exist-l] in get-rules(P:Proof, empty) /\ 

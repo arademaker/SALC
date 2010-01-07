@@ -146,11 +146,7 @@ mod LALCQ-SYSTEM is
  var Q : Qid .
  vars L L1 L2 L3 L4 : List{Label} .
 
- --- 1. opera nas mais externas ou mais internas?
- --- 2. usar lista a direita pode ser melhor, caso contrario tenho que
- ---    garantir que nao existe existencial mais externo
- --- 3. como lidar com regras nao deterministicas? m > n sss inc em um, controle de aplicacoes
- --- 4. new provisos in ALC system rules. Note that we moved R_n and R^n for the right list!! 
+ --- como lidar com regras nao deterministicas? m > n sss inc em um, controle de aplicacoes
 
  rl [initial] : 
    [ X from Y by Q is ALFA, < nil | AT > |- < nil | AT >, GAMMA ] goals((X, XS))  => 
