@@ -1,7 +1,7 @@
 
 in alcq-system.maude 
 
-mod TEST-CASES is
+(mod TEST-CASES is
  inc LALCQ-SYSTEM .
 
   ops A B C D E : -> AConcept .
@@ -37,6 +37,8 @@ mod TEST-CASES is
   op Doctor : -> AConcept .
   eq seq(16) = < nil | EXIST(child, CTRUE) & ALL(child, ~ EXIST(child, ~ Doctor)) > |- < nil | EXIST(child, ALL(child, Doctor)) > . 
 
+  ops Male Female : -> AConcept .
+  eq seq(17) = < nil | AT-LEAST(2, child, Male | Female) > |- < nil | EXIST(child, Male) | EXIST(child, Female) > .
 
 ---   eq seq(5) = < R | A & B | S > |- < R | (A | B) | S > .
 ---   eq seq(6) = < S | A & B | R >, < R | A & B | S > |- < R | (A | B) | S >, < S | (A | B) | R > . 
@@ -57,11 +59,9 @@ mod TEST-CASES is
 ---   eq seq(27) =  < R | C | nil > |- < R | A | ~ A | nil >, < R | B | nil > .
 ---   eq seq(28) =  < S | C | nil > |- < R | A | ~ A | nil >, < R | B | nil > .
  
-endm
+endm)
 
-
-
-mod TEST is 
+(mod TEST is 
  inc TEST-CASES .
 
  op start : Nat -> Goal . 
@@ -69,11 +69,19 @@ mod TEST is
  vars ALFA GAMMA : Set{Expression} .
 
  ceq start(N:Nat) = [ 0 from 0 by 'init is ALFA |- GAMMA ] next(1) goals(0) 
-  if ALFA |- GAMMA := seq(N:Nat) .
+  if (ALFA |- GAMMA) := seq(N:Nat) .
   
-endm
+endm)
+
 
 eof
+
+(srew start(16) using 
+      and-l ; exist-r ; forall-r ; forall-l ; neg-l ; exist-l ; prom-exist ; exist-r ; neg-r ; weak-l ; prom-all ; initial . )
+
+(srew start(17) using 
+      least-l ; or-r ; exist-r ; exist-r ; exist-quant-l ; prom-exist ; or-l ; initial ; initial  .)
+
 
 search [1] start(9) =>! P:Proof goals(empty) .
 search [1] start(9) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .

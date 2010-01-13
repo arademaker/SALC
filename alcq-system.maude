@@ -253,7 +253,7 @@ endfm)
    [ X from Y by Q is  ALFA, < gt(m,R) L1 | A > |- GAMMA ] next(N) goals((X, XS)) => 
    [ X from Y by Q is  ALFA, < gt(m,R) L1 | A > |- GAMMA ] next(N + 1) goals((XS, N)) 
    [ N from X by 'quant-qt-r is  ALFA, < gt((m - 1), R) L1 | A > |- GAMMA ] 
-  if m > 1 .
+  if m >= 1 .
 
  rl [quant-gt-r] : 
    [ X from Y by Q is  ALFA |- < gt(m,R) L1 | A >, GAMMA ] next(N) goals((X, XS)) => 
@@ -270,7 +270,7 @@ endfm)
    [ X from Y by Q is  ALFA |- < lt(m,R) L1 | A >, GAMMA ] next(N) goals((X, XS)) => 
    [ X from Y by Q is  ALFA |- < lt(m,R) L1 | A >, GAMMA ] next(N + 1) goals((XS, N)) 
    [ N from X by 'quant-lt-r is  ALFA |- < lt((m - 1), R) L1 | A >, GAMMA ] 
-  if m > 1 .
+  if m >= 1 .
 
 
  crl [and-r] : 
