@@ -1,7 +1,7 @@
 
-in alcq-system.maude 
+in alcq-system-fm.maude 
 
-mod ALCQ-TEST-CASES is
+(mod ALCQ-TEST-CASES is
  inc LALCQ-SYSTEM .
 
   ops A B C D E : -> AConcept .
@@ -59,10 +59,10 @@ mod ALCQ-TEST-CASES is
 ---   eq seq(27) =  < R | C | nil > |- < R | A | ~ A | nil >, < R | B | nil > .
 ---   eq seq(28) =  < S | C | nil > |- < R | A | ~ A | nil >, < R | B | nil > .
  
-endm
+endm)
 
 
-mod ALCQ-TEST is 
+(mod ALCQ-TEST is 
  inc ALCQ-TEST-CASES .
 
  op start : Nat -> Goal . 
@@ -72,15 +72,13 @@ mod ALCQ-TEST is
  ceq start(N:Nat) = [ 0 from 0 by 'init is ALFA |- GAMMA ] next(1) goals(0) 
   if (ALFA |- GAMMA) := seq(N:Nat) .
   
-endm
+endm)
 
 eof
 
-search [1] start(9) =>! P:Proof goals(empty) .
-search [1] start(9) =>! P:Proof goals(X:Set{Nat}) such that X:Set{Nat} =/= empty .
+(srew start(16) using 
+      and-l ; exist-r ; forall-r ; forall-l ; neg-l ; exist-l ; prom-exist ; exist-r ; neg-r ; weak-l ; prom-all ; initial . )
 
-search start(9) =>! P:Proof goals(empty) such that [1, 'and-l] in get-rules(P:Proof, empty) /\ 
-                                                   [2, 'exist-l] in get-rules(P:Proof, empty) /\ 
-                                                   [3, 'forall-l] in get-rules(P:Proof, empty) /\ 
-                                                   [4, 'exist-r] in get-rules(P:Proof, empty) /\ 
-                                                   [5, 'forall-r] in get-rules(P:Proof, empty) .
+(srew start(17) using 
+      least-l ; or-r ; exist-r ; exist-r ; exist-quant-l ; prom-exist ; or-l ; initial ; initial  .)
+
