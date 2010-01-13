@@ -58,7 +58,7 @@ endv)
 
  op <_|_> : List{Label} Concept -> LConcept [ctor] . 
  
- op [_,_] : Nat LConcept -> FzConcept .
+ op `[_`,_`] : Nat LConcept -> FzConcept .
 
  ops has-quant has-lt has-gt : List{Label} -> Bool .
  ops has-al has-ex : List{Label} -> Bool .
@@ -117,7 +117,7 @@ endv)
  op next  : Nat -> State .
  op goals : Set{Nat} -> State .
 
- op [_from_by_is_] : Nat Nat Qid Sequent -> Goal [format (n d d d d d d d d d)] .
+ op `[_from_by_is_`] : Nat Nat Qid Sequent -> Goal [format (n d d d d d d d d d)] .
  op nil : -> Proof [ctor] .
  op __ : Proof Proof -> Proof [ctor comm assoc] .
 
