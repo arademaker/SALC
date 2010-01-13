@@ -1,6 +1,6 @@
 
 
-(fmod SYNTAX is 
+fmod SYNTAX is 
  inc NAT .
 
  sorts AConcept Concept ARole Role .
@@ -23,10 +23,10 @@
  var C : Concept .
 
  --- eq AT-LEAST(1, R, C) = EXIST(R, C) .
-endfm)
+endfm
 
 
-(fmod LABEL is 
+fmod LABEL is 
  inc SYNTAX .
 
  sorts Label ELabel ALabel QLabel .
@@ -35,15 +35,15 @@ endfm)
  ops gt lt : Nat Role -> QLabel .
  op ex : Role -> ELabel .
  op al : Role -> ALabel .
-endfm)
+endfm
 
 
-(view Label from TRIV to LABEL is 
+view Label from TRIV to LABEL is 
  sort Elt to Label .
-endv)
+endv
 
 
-(fmod LALC-SYNTAX is 
+fmod LALC-SYNTAX is 
  inc LABEL .
  inc LIST{Label} .
 
@@ -93,15 +93,15 @@ endv)
  eq neg-aux(L1 ex(R), L2) = neg-aux(L1, al(R) L2) .
  eq neg-aux(nil, L2) = L2 .
 
-endfm)
+endfm
 
 
-(view Expression from TRIV to LALC-SYNTAX is 
+view Expression from TRIV to LALC-SYNTAX is 
  sort Elt to Expression .
-endv)
+endv
 
 
-(fmod SEQUENT-CALCULUS is
+fmod SEQUENT-CALCULUS is
  inc LALC-SYNTAX .
  inc SET{Expression} .
  inc SET{Label} .
@@ -124,10 +124,10 @@ endv)
  op _|-_ : Set{Expression} Set{Expression} -> Sequent [ctor prec 122 gather(e e)] .
  op _:_|-_:_ : Set{Expression} Set{Expression} Set{Expression} Set{Expression} -> Sequent [ctor prec 122 gather(e e e e)] .
  
-endfm)
+endfm
 
 
-(mod LALCQ-SYSTEM is 
+mod LALCQ-SYSTEM is 
  inc SEQUENT-CALCULUS .
  inc INT .
 
@@ -347,6 +347,5 @@ endfm)
   if all-label(ALFA, gt(n,R)) = true /\ 
      ALFA' := remove-label(ALFA, gt(n,R), empty) .
 
-endm)
-
+endm
 

@@ -1,0 +1,19 @@
+
+in alcq-system-test.maude
+
+(view Label from TRIV to LABEL is 
+ sort Elt to Label .
+endv)
+
+(view Expression from TRIV to LALC-SYNTAX is 
+ sort Elt to Expression .
+endv)
+
+
+(srew in TEST : start(16) using 
+      and-l ; exist-r ; forall-r ; forall-l ; neg-l ; exist-l ; prom-exist ; exist-r ; neg-r ; weak-l ; prom-all ; initial . )
+
+(srew start(17) using 
+      least-l ; or-r ; exist-r ; exist-r ; exist-quant-l ; prom-exist ; or-l ; initial ; initial  .)
+
+
